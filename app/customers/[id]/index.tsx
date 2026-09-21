@@ -1,0 +1,1 @@
+import { useLocalSearchParams } from 'expo-router'; import { CustomerDetail } from '@/components/detail-screens'; export default function(){const{id}=useLocalSearchParams<{id:string}>();return <CustomerDetail id={id}/>}

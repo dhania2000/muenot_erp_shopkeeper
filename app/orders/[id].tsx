@@ -1,0 +1,1 @@
+import { useLocalSearchParams } from 'expo-router'; import { OrderDetail } from '@/components/detail-screens'; import { orders } from '@/features/demo/data'; export default function(){const{id}=useLocalSearchParams<{id:string}>();const x=orders.find(x=>x.id===id);return x?<OrderDetail order={x}/>:null}

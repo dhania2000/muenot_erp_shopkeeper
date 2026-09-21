@@ -1,0 +1,1 @@
+import { useLocalSearchParams } from 'expo-router'; import { Chat } from '@/components/detail-screens'; import { conversations } from '@/features/demo/data'; export default function(){const{id}=useLocalSearchParams<{id:string}>();const c=conversations.find(x=>x.id===id);return c?<Chat conversation={c}/>:null}

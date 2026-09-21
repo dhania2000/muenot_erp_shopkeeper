@@ -1,0 +1,1 @@
+import { useLocalSearchParams } from 'expo-router'; import { TemplateDetail } from '@/components/detail-screens'; export default function(){const{id}=useLocalSearchParams<{id:string}>();return <TemplateDetail id={id}/>}

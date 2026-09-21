@@ -1,0 +1,776 @@
+[
+  {
+    "file": ".gitignore",
+    "bytes": 223,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/customers/[id]/edit/page.tsx",
+    "bytes": 425,
+    "imports": "next/navigation, @/components/customer-form, @/lib/mock-data",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/customers/[id]/page.tsx",
+    "bytes": 5149,
+    "imports": "next/link, next/navigation, lucide-react, @/components/screen-header, @/components/initials-avatar, @/components/order-card, @/components/ui/badge, @/components/ui/button, @/components/ui/empty, @/lib/mock-data",
+    "elements": "div, h1, h2, p, span"
+  },
+  {
+    "file": "app/(app)/customers/new/page.tsx",
+    "bytes": 136,
+    "imports": "@/components/customer-form",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/customers/page.tsx",
+    "bytes": 2589,
+    "imports": "react, next/link, lucide-react, @/components/ui/input-group, @/components/ui/button, @/components/customer-card, @/components/ui/empty, @/lib/mock-data",
+    "elements": "div, h1, header, p, span"
+  },
+  {
+    "file": "app/(app)/home/page.tsx",
+    "bytes": 5787,
+    "imports": "next/link, lucide-react, @/components/initials-avatar, @/components/metric-card, @/components/status-badge, @/components/conversation-card, @/components/order-card, @/components/ui/button, @/lib/mock-data",
+    "elements": "div, h1, h2, header, p, span"
+  },
+  {
+    "file": "app/(app)/inbox/[id]/page.tsx",
+    "bytes": 435,
+    "imports": "next/navigation, @/lib/mock-data, @/components/chat-screen",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/inbox/page.tsx",
+    "bytes": 3228,
+    "imports": "react, lucide-react, @/components/ui/input-group, @/components/ui/tabs, @/components/conversation-card, @/components/ui/empty, @/components/ui/button, @/lib/mock-data",
+    "elements": "div, h1, header, span"
+  },
+  {
+    "file": "app/(app)/layout.tsx",
+    "bytes": 198,
+    "imports": "@/components/app-chrome",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/more/automations/page.tsx",
+    "bytes": 5080,
+    "imports": "react, sonner, lucide-react, @/components/screen-header, @/components/ui/switch, @/components/ui/button, @/components/ui/sheet, @/components/ui/marker",
+    "elements": "div, p, span, typeof"
+  },
+  {
+    "file": "app/(app)/more/campaigns/new/page.tsx",
+    "bytes": 7883,
+    "imports": "react, next/navigation, sonner, lucide-react, @/components/screen-header, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/lib/utils, @/lib/mock-data",
+    "elements": "button, div, p, span, string"
+  },
+  {
+    "file": "app/(app)/more/campaigns/page.tsx",
+    "bytes": 3468,
+    "imports": "next/link, lucide-react, @/components/screen-header, @/components/ui/button, @/components/status-badge, @/lib/mock-data",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "app/(app)/more/page.tsx",
+    "bytes": 3019,
+    "imports": "next/link, lucide-react, @/components/initials-avatar, @/lib/mock-data",
+    "elements": "div, h1, h2, header, p, span"
+  },
+  {
+    "file": "app/(app)/more/products/[id]/edit/page.tsx",
+    "bytes": 415,
+    "imports": "next/navigation, @/components/product-form, @/lib/mock-data",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/more/products/[id]/page.tsx",
+    "bytes": 2801,
+    "imports": "next/image, next/link, next/navigation, lucide-react, @/components/screen-header, @/components/status-badge, @/components/ui/button, @/lib/mock-data",
+    "elements": "div, h1, h2, p, span"
+  },
+  {
+    "file": "app/(app)/more/products/new/page.tsx",
+    "bytes": 132,
+    "imports": "@/components/product-form",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/more/products/page.tsx",
+    "bytes": 3044,
+    "imports": "react, next/link, lucide-react, @/components/ui/input-group, @/components/ui/button, @/components/screen-header, @/components/product-card, @/components/ui/tabs, @/components/ui/empty, @/lib/mock-data",
+    "elements": "div, span"
+  },
+  {
+    "file": "app/(app)/more/reports/page.tsx",
+    "bytes": 4409,
+    "imports": "lucide-react, @/components/screen-header, @/components/mini-bar-chart, @/components/ui/badge",
+    "elements": "div, h2, p, span"
+  },
+  {
+    "file": "app/(app)/more/settings/account/page.tsx",
+    "bytes": 3019,
+    "imports": "react, sonner, lucide-react, @/components/screen-header, @/components/ui/sheet, @/components/ui/field, @/components/ui/input, @/components/ui/button, @/lib/mock-data",
+    "elements": "button, div, p, span"
+  },
+  {
+    "file": "app/(app)/more/settings/business-hours/page.tsx",
+    "bytes": 2799,
+    "imports": "react, sonner, @/components/screen-header, @/components/ui/button, @/components/ui/switch, @/components/ui/input",
+    "elements": "div, span"
+  },
+  {
+    "file": "app/(app)/more/settings/help/page.tsx",
+    "bytes": 2618,
+    "imports": "lucide-react, @/components/screen-header, @/components/ui/accordion",
+    "elements": "a, div, h2, span"
+  },
+  {
+    "file": "app/(app)/more/settings/legal/privacy/page.tsx",
+    "bytes": 1175,
+    "imports": "@/components/screen-header",
+    "elements": "div, p"
+  },
+  {
+    "file": "app/(app)/more/settings/legal/terms/page.tsx",
+    "bytes": 1073,
+    "imports": "@/components/screen-header",
+    "elements": "div, p"
+  },
+  {
+    "file": "app/(app)/more/settings/notifications/page.tsx",
+    "bytes": 2070,
+    "imports": "react, sonner, @/components/screen-header, @/components/ui/switch, @/components/ui/separator",
+    "elements": "div, p"
+  },
+  {
+    "file": "app/(app)/more/settings/page.tsx",
+    "bytes": 4698,
+    "imports": "next/link, next/navigation, lucide-react, @/components/screen-header, @/components/initials-avatar, @/components/status-badge, @/components/ui/alert-dialog, @/lib/mock-data",
+    "elements": "div, h2, p, span"
+  },
+  {
+    "file": "app/(app)/more/settings/shop-profile/page.tsx",
+    "bytes": 3109,
+    "imports": "react, next/navigation, sonner, @/components/screen-header, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/textarea, @/lib/mock-data",
+    "elements": "div, form"
+  },
+  {
+    "file": "app/(app)/more/settings/whatsapp/page.tsx",
+    "bytes": 5717,
+    "imports": "react, sonner, lucide-react, @/lib/types, @/components/screen-header, @/components/status-badge, @/components/ui/button, @/components/ui/spinner, @/components/ui/alert-dialog, @/lib/mock-data",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "app/(app)/more/subscription/page.tsx",
+    "bytes": 4526,
+    "imports": "lucide-react, @/components/screen-header, @/components/ui/button, @/components/ui/progress, @/components/ui/badge",
+    "elements": "div, h2, li, p, span, ul"
+  },
+  {
+    "file": "app/(app)/more/team/page.tsx",
+    "bytes": 4452,
+    "imports": "react, sonner, lucide-react, @/components/screen-header, @/components/initials-avatar, @/components/ui/badge, @/components/ui/button, @/components/ui/dropdown-menu, @/components/ui/sheet, @/components/ui/field, @/components/ui/input, @/lib/mock-data",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "app/(app)/more/templates/[id]/page.tsx",
+    "bytes": 2497,
+    "imports": "next/navigation, lucide-react, @/components/screen-header, @/components/status-badge, @/components/ui/badge, @/lib/mock-data",
+    "elements": "div, h1"
+  },
+  {
+    "file": "app/(app)/more/templates/page.tsx",
+    "bytes": 3220,
+    "imports": "react, next/link, lucide-react, @/components/screen-header, @/components/ui/tabs, @/components/status-badge, @/components/ui/badge, @/components/ui/empty, @/lib/mock-data",
+    "elements": "div, p"
+  },
+  {
+    "file": "app/(app)/notifications/page.tsx",
+    "bytes": 2658,
+    "imports": "lucide-react, @/components/screen-header, @/components/ui/empty, @/lib/utils, @/lib/mock-data, @/lib/types",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "app/(app)/orders/[id]/page.tsx",
+    "bytes": 544,
+    "imports": "next/navigation, @/lib/mock-data, @/components/order-details",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/orders/new/page.tsx",
+    "bytes": 224,
+    "imports": "react, @/components/create-order-flow",
+    "elements": ""
+  },
+  {
+    "file": "app/(app)/orders/page.tsx",
+    "bytes": 2473,
+    "imports": "react, next/link, lucide-react, @/components/ui/button, @/components/ui/tabs, @/components/order-card, @/components/ui/empty, @/lib/mock-data",
+    "elements": "div, h1, header, span"
+  },
+  {
+    "file": "app/(auth)/layout.tsx",
+    "bytes": 217,
+    "imports": "@/components/mobile-shell",
+    "elements": ""
+  },
+  {
+    "file": "app/(auth)/login/forgot-password/page.tsx",
+    "bytes": 3099,
+    "imports": "react, next/navigation, lucide-react, @/components/screen-header, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/empty, @/components/ui/spinner",
+    "elements": "div, form, p"
+  },
+  {
+    "file": "app/(auth)/login/page.tsx",
+    "bytes": 5403,
+    "imports": "react, next/link, next/navigation, next/image, lucide-react, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/input-group, @/components/ui/alert, @/components/ui/spinner",
+    "elements": "div, form, h1, p"
+  },
+  {
+    "file": "app/(auth)/onboarding/business/page.tsx",
+    "bytes": 4145,
+    "imports": "react, next/navigation, @/components/screen-header, @/components/onboarding-progress, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/select",
+    "elements": "div, form"
+  },
+  {
+    "file": "app/(auth)/onboarding/location/page.tsx",
+    "bytes": 3143,
+    "imports": "react, next/navigation, @/components/screen-header, @/components/onboarding-progress, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/textarea",
+    "elements": "div, form"
+  },
+  {
+    "file": "app/(auth)/onboarding/shop-details/page.tsx",
+    "bytes": 3155,
+    "imports": "react, next/navigation, @/components/screen-header, @/components/onboarding-progress, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/select",
+    "elements": "div, form"
+  },
+  {
+    "file": "app/(auth)/onboarding/whatsapp/page.tsx",
+    "bytes": 4548,
+    "imports": "react, next/navigation, lucide-react, @/components/screen-header, @/components/onboarding-progress, @/components/ui/button, @/components/ui/spinner, @/lib/types, @/components/status-badge",
+    "elements": "div, h2, p, span, typeof"
+  },
+  {
+    "file": "app/(auth)/signup/page.tsx",
+    "bytes": 4445,
+    "imports": "react, next/link, next/navigation, lucide-react, @/components/screen-header, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/input-group, @/components/ui/spinner",
+    "elements": "div, form, p"
+  },
+  {
+    "file": "app/(auth)/welcome/page.tsx",
+    "bytes": 2490,
+    "imports": "next/link, next/image, lucide-react, @/components/ui/button",
+    "elements": "br, div, h1, p, span"
+  },
+  {
+    "file": "app/globals.css",
+    "bytes": 4928,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "app/layout.tsx",
+    "bytes": 1313,
+    "imports": "@vercel/analytics/next, next, @/components/ui/sonner",
+    "elements": "body, html"
+  },
+  {
+    "file": "app/not-found.tsx",
+    "bytes": 966,
+    "imports": "next/link, lucide-react, @/components/mobile-shell, @/components/ui/empty, @/components/ui/button",
+    "elements": "div"
+  },
+  {
+    "file": "app/page.tsx",
+    "bytes": 1573,
+    "imports": "react, next/navigation, next/image, @/components/mobile-shell, @/components/ui/spinner",
+    "elements": "div, p"
+  },
+  {
+    "file": "components.json",
+    "bytes": 449,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "components/app-chrome.tsx",
+    "bytes": 631,
+    "imports": "next/navigation, @/components/mobile-shell, @/components/bottom-nav",
+    "elements": ""
+  },
+  {
+    "file": "components/bottom-nav.tsx",
+    "bytes": 1990,
+    "imports": "next/link, next/navigation, lucide-react, @/lib/utils",
+    "elements": "div, nav, span"
+  },
+  {
+    "file": "components/chat-screen.tsx",
+    "bytes": 11220,
+    "imports": "react, next/link, next/navigation, sonner, lucide-react, @/lib/types, @/components/initials-avatar, @/components/message-status-icon, @/components/ui/button, @/components/ui/badge, @/components/ui/input-group, @/components/ui/dropdown-menu, @/components/ui/sheet, @/components/ui/input, @/components/ui/radio-group, @/components/ui/label, @/components/ui/message, @/components/ui/bubble, @/components/ui/marker, @/lib/mock-data",
+    "elements": "button, div, header, p, span"
+  },
+  {
+    "file": "components/conversation-card.tsx",
+    "bytes": 2058,
+    "imports": "next/link, @/lib/types, @/components/initials-avatar, @/components/ui/badge, @/lib/utils",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "components/create-order-flow.tsx",
+    "bytes": 12315,
+    "imports": "react, next/navigation, sonner, lucide-react, @/components/screen-header, @/components/ui/button, @/components/ui/input-group, @/components/initials-avatar, @/lib/utils, @/lib/mock-data, @/lib/types",
+    "elements": "button, div, p, span, string"
+  },
+  {
+    "file": "components/customer-card.tsx",
+    "bytes": 1257,
+    "imports": "next/link, @/lib/types, @/components/initials-avatar, @/components/ui/badge, lucide-react",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "components/customer-form.tsx",
+    "bytes": 5222,
+    "imports": "react, next/navigation, sonner, lucide-react, @/lib/types, @/components/screen-header, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/input-group, @/components/ui/textarea, @/components/ui/badge",
+    "elements": "button, div, form"
+  },
+  {
+    "file": "components/initials-avatar.tsx",
+    "bytes": 915,
+    "imports": "@/components/ui/avatar, @/lib/utils",
+    "elements": ""
+  },
+  {
+    "file": "components/message-status-icon.tsx",
+    "bytes": 648,
+    "imports": "lucide-react, @/lib/types, @/lib/utils",
+    "elements": ""
+  },
+  {
+    "file": "components/metric-card.tsx",
+    "bytes": 1123,
+    "imports": "lucide-react, @/lib/utils",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "components/mini-bar-chart.tsx",
+    "bytes": 695,
+    "imports": "",
+    "elements": "div, span"
+  },
+  {
+    "file": "components/mobile-shell.tsx",
+    "bytes": 588,
+    "imports": "@/lib/utils",
+    "elements": "div"
+  },
+  {
+    "file": "components/onboarding-progress.tsx",
+    "bytes": 789,
+    "imports": "@/lib/utils",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "components/order-card.tsx",
+    "bytes": 1646,
+    "imports": "next/link, @/lib/types, @/components/status-badge",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "components/order-details.tsx",
+    "bytes": 5188,
+    "imports": "react, next/link, sonner, lucide-react, @/lib/types, @/components/screen-header, @/components/status-badge, @/components/ui/button, @/components/ui/select",
+    "elements": "div, label, p, span"
+  },
+  {
+    "file": "components/product-card.tsx",
+    "bytes": 1971,
+    "imports": "next/image, next/link, @/lib/types, @/components/status-badge",
+    "elements": "div, p, span"
+  },
+  {
+    "file": "components/product-form.tsx",
+    "bytes": 6541,
+    "imports": "react, next/navigation, sonner, lucide-react, @/lib/types, @/components/screen-header, @/components/ui/button, @/components/ui/field, @/components/ui/input, @/components/ui/textarea, @/components/ui/select",
+    "elements": "div, form, img, input, label"
+  },
+  {
+    "file": "components/screen-header.tsx",
+    "bytes": 1713,
+    "imports": "next/link, next/navigation, lucide-react, @/components/ui/button, @/lib/utils",
+    "elements": "div, h1, header, p, span"
+  },
+  {
+    "file": "components/status-badge.tsx",
+    "bytes": 2767,
+    "imports": "@/lib/utils",
+    "elements": "span"
+  },
+  {
+    "file": "components/ui/accordion.tsx",
+    "bytes": 2659,
+    "imports": "@base-ui/react/accordion, cn, lucide-react",
+    "elements": "div"
+  },
+  {
+    "file": "components/ui/alert-dialog.tsx",
+    "bytes": 5437,
+    "imports": "react, @base-ui/react/alert-dialog, cn, @/components/ui/button",
+    "elements": "div, typeof"
+  },
+  {
+    "file": "components/ui/alert.tsx",
+    "bytes": 2113,
+    "imports": "react, class-variance-authority, cn",
+    "elements": "div, typeof"
+  },
+  {
+    "file": "components/ui/attachment.tsx",
+    "bytes": 6303,
+    "imports": "react, @base-ui/react/merge-props, @base-ui/react/use-render, class-variance-authority, cn, @/components/ui/button",
+    "elements": "div, span, typeof"
+  },
+  {
+    "file": "components/ui/avatar.tsx",
+    "bytes": 3136,
+    "imports": "react, @base-ui/react/avatar, cn",
+    "elements": "div, span"
+  },
+  {
+    "file": "components/ui/badge.tsx",
+    "bytes": 1966,
+    "imports": "@base-ui/react/merge-props, @base-ui/react/use-render, class-variance-authority, cn",
+    "elements": "typeof"
+  },
+  {
+    "file": "components/ui/bubble.tsx",
+    "bytes": 4926,
+    "imports": "react, @base-ui/react/merge-props, @base-ui/react/use-render, class-variance-authority, cn",
+    "elements": "div, typeof"
+  },
+  {
+    "file": "components/ui/button-group.tsx",
+    "bytes": 2558,
+    "imports": "@base-ui/react/merge-props, @base-ui/react/use-render, class-variance-authority, cn, @/components/ui/separator",
+    "elements": "div, typeof"
+  },
+  {
+    "file": "components/ui/button.tsx",
+    "bytes": 3287,
+    "imports": "@base-ui/react/button, class-variance-authority, cn",
+    "elements": "typeof"
+  },
+  {
+    "file": "components/ui/card.tsx",
+    "bytes": 2709,
+    "imports": "react, cn",
+    "elements": "div"
+  },
+  {
+    "file": "components/ui/checkbox.tsx",
+    "bytes": 1557,
+    "imports": "@base-ui/react/checkbox, cn, lucide-react",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/dialog.tsx",
+    "bytes": 4213,
+    "imports": "react, @base-ui/react/dialog, cn, @/components/ui/button, lucide-react",
+    "elements": "div, span"
+  },
+  {
+    "file": "components/ui/drawer.tsx",
+    "bytes": 11560,
+    "imports": "react, @base-ui/react/drawer, cn",
+    "elements": "div"
+  },
+  {
+    "file": "components/ui/dropdown-menu.tsx",
+    "bytes": 8993,
+    "imports": "react, @base-ui/react/menu, cn, lucide-react",
+    "elements": "span, typeof"
+  },
+  {
+    "file": "components/ui/empty.tsx",
+    "bytes": 2477,
+    "imports": "class-variance-authority, cn",
+    "elements": "div, typeof"
+  },
+  {
+    "file": "components/ui/field.tsx",
+    "bytes": 6495,
+    "imports": "react, class-variance-authority, cn, @/components/ui/label, @/components/ui/separator",
+    "elements": "div, fieldset, legend, li, p, span, typeof, ul"
+  },
+  {
+    "file": "components/ui/input-group.tsx",
+    "bytes": 5413,
+    "imports": "react, class-variance-authority, cn, @/components/ui/button, @/components/ui/input, @/components/ui/textarea",
+    "elements": "div, span, typeof"
+  },
+  {
+    "file": "components/ui/input.tsx",
+    "bytes": 1049,
+    "imports": "react, @base-ui/react/input, cn",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/label.tsx",
+    "bytes": 527,
+    "imports": "react, cn",
+    "elements": "label"
+  },
+  {
+    "file": "components/ui/marker.tsx",
+    "bytes": 2008,
+    "imports": "react, @base-ui/react/merge-props, @base-ui/react/use-render, class-variance-authority, cn",
+    "elements": "span, typeof"
+  },
+  {
+    "file": "components/ui/message-scroller.tsx",
+    "bytes": 4214,
+    "imports": "react, @shadcn/react/message-scroller, cn, @/components/ui/button, lucide-react",
+    "elements": "span, typeof"
+  },
+  {
+    "file": "components/ui/message.tsx",
+    "bytes": 2313,
+    "imports": "react, cn",
+    "elements": "div"
+  },
+  {
+    "file": "components/ui/progress.tsx",
+    "bytes": 1812,
+    "imports": "@base-ui/react/progress, cn",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/radio-group.tsx",
+    "bytes": 1862,
+    "imports": "@base-ui/react/radio, @base-ui/react/radio-group, cn",
+    "elements": "span"
+  },
+  {
+    "file": "components/ui/scroll-area.tsx",
+    "bytes": 1668,
+    "imports": "react, @base-ui/react/scroll-area, cn",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/select.tsx",
+    "bytes": 6845,
+    "imports": "react, @base-ui/react/select, cn, lucide-react",
+    "elements": "span, typeof"
+  },
+  {
+    "file": "components/ui/separator.tsx",
+    "bytes": 559,
+    "imports": "@base-ui/react/separator, cn",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/sheet.tsx",
+    "bytes": 4549,
+    "imports": "react, @base-ui/react/dialog, cn, @/components/ui/button, lucide-react",
+    "elements": "div, span"
+  },
+  {
+    "file": "components/ui/skeleton.tsx",
+    "bytes": 279,
+    "imports": "cn",
+    "elements": "div"
+  },
+  {
+    "file": "components/ui/sonner.tsx",
+    "bytes": 1275,
+    "imports": "next-themes, sonner, lucide-react",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/spinner.tsx",
+    "bytes": 323,
+    "imports": "cn, lucide-react",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/switch.tsx",
+    "bytes": 1832,
+    "imports": "@base-ui/react/switch, cn",
+    "elements": ""
+  },
+  {
+    "file": "components/ui/tabs.tsx",
+    "bytes": 3568,
+    "imports": "@base-ui/react/tabs, class-variance-authority, cn",
+    "elements": "typeof"
+  },
+  {
+    "file": "components/ui/textarea.tsx",
+    "bytes": 849,
+    "imports": "react, cn",
+    "elements": "textarea"
+  },
+  {
+    "file": "components/ui/toggle-group.tsx",
+    "bytes": 3263,
+    "imports": "react, @base-ui/react/toggle, @base-ui/react/toggle-group, class-variance-authority, cn, @/components/ui/toggle",
+    "elements": "typeof"
+  },
+  {
+    "file": "components/ui/toggle.tsx",
+    "bytes": 1796,
+    "imports": "@base-ui/react/toggle, class-variance-authority, cn",
+    "elements": "typeof"
+  },
+  {
+    "file": "lib/mock-data.ts",
+    "bytes": 11103,
+    "imports": "./types",
+    "elements": ""
+  },
+  {
+    "file": "lib/types.ts",
+    "bytes": 2470,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "lib/utils.ts",
+    "bytes": 172,
+    "imports": "clsx, tailwind-merge",
+    "elements": ""
+  },
+  {
+    "file": "next.config.mjs",
+    "bytes": 192,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "package.json",
+    "bytes": 908,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "pnpm-lock.yaml",
+    "bytes": 118677,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "pnpm-workspace.yaml",
+    "bytes": 72,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "postcss.config.mjs",
+    "bytes": 152,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/apple-icon.png",
+    "bytes": 2626,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/icon-dark-32x32.png",
+    "bytes": 585,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/icon-light-32x32.png",
+    "bytes": 566,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/icon.svg",
+    "bytes": 1329,
+    "imports": "",
+    "elements": "defs, g, path, rect, style, svg"
+  },
+  {
+    "file": "public/images/logo-mark.png",
+    "bytes": 182565,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/images/products/earrings.png",
+    "bytes": 505606,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/images/products/kurta.png",
+    "bytes": 871871,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/images/products/mixer.png",
+    "bytes": 386713,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/images/products/rice-bag.png",
+    "bytes": 1102070,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/images/products/smartphone.png",
+    "bytes": 372548,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/images/products/tools.png",
+    "bytes": 610946,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/placeholder-logo.png",
+    "bytes": 568,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/placeholder-logo.svg",
+    "bytes": 3208,
+    "imports": "",
+    "elements": "path, svg"
+  },
+  {
+    "file": "public/placeholder-user.jpg",
+    "bytes": 1635,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/placeholder.jpg",
+    "bytes": 1064,
+    "imports": "",
+    "elements": ""
+  },
+  {
+    "file": "public/placeholder.svg",
+    "bytes": 3253,
+    "imports": "",
+    "elements": "defs, g, path, rect, stop, svg"
+  },
+  {
+    "file": "tsconfig.json",
+    "bytes": 680,
+    "imports": "",
+    "elements": ""
+  }
+]
