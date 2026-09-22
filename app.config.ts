@@ -6,7 +6,7 @@ const config: ExpoConfig = {
   icon: './assets/images/logo-mark.png',
   android: { package: 'com.muenot.shopkeeper', softwareKeyboardLayoutMode: 'resize' },
   ios: { bundleIdentifier: 'com.muenot.shopkeeper', supportsTablet: true },
-  plugins: ['expo-router', 'expo-status-bar', ['expo-splash-screen', {
+  plugins: ['expo-router', 'expo-status-bar', 'expo-secure-store', ['expo-splash-screen', {
     backgroundColor: '#00583d', image: './assets/images/logo-mark.png', imageWidth: 80,
   }], ['expo-image-picker', { photosPermission: 'Choose a product photo for your shop.', microphonePermission: false }]],
   experiments: { typedRoutes: true },

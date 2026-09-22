@@ -1,1 +1,1 @@
-import { useLocalSearchParams } from 'expo-router'; import { ProductForm } from '@/components/forms'; import { products } from '@/features/demo/data'; export default function(){const{id}=useLocalSearchParams<{id:string}>();return <ProductForm product={products.find(x=>x.id===id)}/>}
+import { useLocalSearchParams } from 'expo-router'; import { ProductForm } from '@/components/forms'; export default function(){const{id}=useLocalSearchParams<{id:string}>();return <ProductForm id={id}/>}

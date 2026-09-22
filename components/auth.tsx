@@ -1,5 +1,196 @@
-import { useState } from 'react'; import { Alert, Image, StyleSheet, Text, View } from 'react-native'; import { Link, router } from 'expo-router'; import { colors } from '@/constants/theme'; import { Button, Input, Icon } from './ui'; import { Header, Screen } from './screen';
-export function Welcome(){const points=[['chatbubble-outline','WhatsApp conversations'],['people-outline','Customers & relationships'],['bag-outline','Orders, start to finish'],['cube-outline','Products & inventory']];return <Screen><View style={s.welcome}><View style={s.logoRow}><View style={s.logo}><Image source={require('@/assets/images/logo-mark.png')} style={s.logoImage}/></View><Text style={s.brand}>Muenot Shopkeeper</Text></View><View style={s.middle}><Text style={s.hero}>Run your business{`\n`}from your phone</Text><Text style={s.desc}>Manage WhatsApp, customers, orders, products and business communication — all from one simple app.</Text><View style={s.grid}>{points.map(([icon,label])=><View key={label} style={s.point}><View style={s.round}><Icon name={icon as any}/></View><Text style={s.pointText}>{label}</Text></View>)}</View></View><View style={s.buttons}><Button title="Get Started" onPress={()=>router.push('/signup')}/><Button title="Login" variant="outline" onPress={()=>router.push('/login')}/></View></View></Screen>}
-export function Login({signup=false}:{signup?:boolean}){const[id,setId]=useState('');const[pw,setPw]=useState('');const[name,setName]=useState('');const valid=signup?name.trim().length>1&&id.replace(/\D/g,'').length>=10&&pw.length>=6:id.trim().length>0&&pw.length>=4;return <Screen keyboard><Header title={signup?'Create Account':'Welcome back'} back={signup}/><View style={s.form}><Text style={s.desc}>{signup?"Let's get your shop set up on Muenot Shopkeeper.":'Login to manage your shop'}</Text>{signup&&<Input label="Owner Name" value={name} onChangeText={setName} placeholder="Rajesh Sharma"/>}<Input label={signup?'Mobile Number':'Email or Mobile Number'} value={id} onChangeText={setId} keyboardType={signup?'phone-pad':'default'} placeholder={signup?'98765 43210':'you@shop.com or 98765 43210'}/><Input label="Password" value={pw} onChangeText={setPw} secureTextEntry placeholder={signup?'Create a password':'Enter your password'}/>{!signup&&<Link href="/login/forgot-password"><Text style={s.link}>Forgot Password?</Text></Link>}<View style={{marginTop:'auto',gap:15}}><Button title={signup?'Continue':'Login'} disabled={!valid} onPress={()=>router.replace(signup?'/onboarding/shop-details':'/home')}/><Text style={s.center}>{signup?'Already have an account? ':'Don\'t have an account? '}<Text style={s.link} onPress={()=>router.push(signup?'/login':'/signup')}>{signup?'Login':'Create Account'}</Text></Text></View></View></Screen>}
-export function ForgotPassword(){const[value,setValue]=useState('');const[sent,setSent]=useState(false);return <Screen keyboard>{sent?<><Header title="Check your inbox"/><View style={s.sent}><View style={s.round}><Icon name="mail-open-outline" size={30}/></View><Text style={s.heroSmall}>Reset link sent</Text><Text style={s.desc}>We've sent password reset instructions to {value}.</Text><Button title="Back to Login" onPress={()=>router.replace('/login')}/></View></>:<><Header title="Forgot Password"/><View style={s.form}><Text style={s.desc}>Enter the email or mobile number linked to your account. We'll send you instructions to reset your password.</Text><Input label="Email or Mobile Number" value={value} onChangeText={setValue} placeholder="you@shop.com or 98765 43210"/><View style={{marginTop:'auto'}}><Button title="Send Reset Link" disabled={!value.trim()} onPress={()=>setSent(true)}/></View></View></>}</Screen>}
-const s=StyleSheet.create({welcome:{flex:1,padding:24},logoRow:{flexDirection:'row',alignItems:'center',gap:10},logo:{width:38,height:38,borderRadius:12,backgroundColor:colors.primary,alignItems:'center',justifyContent:'center'},logoImage:{width:25,height:25,borderRadius:8},brand:{fontSize:14,fontWeight:'800',color:colors.text},middle:{flex:1,justifyContent:'center',alignItems:'center',gap:22},hero:{fontSize:31,fontWeight:'800',textAlign:'center',lineHeight:38,color:colors.text},heroSmall:{fontSize:20,fontWeight:'800',color:colors.text},desc:{fontSize:14,color:colors.muted,lineHeight:21},grid:{flexDirection:'row',flexWrap:'wrap',gap:10},point:{width:'47%',borderRadius:16,borderWidth:1,borderColor:colors.border,backgroundColor:colors.card,padding:14,alignItems:'center',gap:8},round:{width:42,height:42,borderRadius:21,backgroundColor:colors.primarySoft,alignItems:'center',justifyContent:'center'},pointText:{fontSize:12,fontWeight:'700',textAlign:'center',color:colors.text},buttons:{gap:10},form:{flex:1,padding:22,gap:15},link:{fontSize:13,fontWeight:'800',color:colors.primary},center:{fontSize:13,textAlign:'center',color:colors.muted},sent:{flex:1,padding:32,alignItems:'center',justifyContent:'center',gap:15}});
+import { useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { Link, router } from 'expo-router';
+import { colors } from '@/constants/theme';
+import { Button, Input, Icon } from './ui';
+import { Header, Screen } from './screen';
+import { useSession } from '@/features/session';
+
+export function Welcome() {
+  const points = [
+    ['chatbubble-outline', 'WhatsApp conversations'],
+    ['people-outline', 'Customers & relationships'],
+    ['bag-outline', 'Orders, start to finish'],
+    ['cube-outline', 'Products & inventory'],
+  ];
+  return (
+    <Screen>
+      <View style={s.welcome}>
+        <View style={s.logoRow}>
+          <View style={s.logo}>
+            <Image source={require('@/assets/images/logo-mark.png')} style={s.logoImage} />
+          </View>
+          <Text style={s.brand}>Muenot Shopkeeper</Text>
+        </View>
+        <View style={s.middle}>
+          <Text style={s.hero}>Run your business{`\n`}from your phone</Text>
+          <Text style={s.desc}>
+            Manage WhatsApp, customers, orders, products and business communication — all from one simple app.
+          </Text>
+          <View style={s.grid}>
+            {points.map(([icon, label]) => (
+              <View key={label} style={s.point}>
+                <View style={s.round}>
+                  <Icon name={icon as any} />
+                </View>
+                <Text style={s.pointText}>{label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+        <View style={s.buttons}>
+          <Button title="Login" onPress={() => router.push('/login')} />
+          <Button title="Get Started" variant="outline" onPress={() => router.push('/signup')} />
+        </View>
+      </View>
+    </Screen>
+  );
+}
+
+/**
+ * Login talks to POST /auth/login, which authenticates on email + password
+ * only. The field was previously labelled "Email or Mobile Number"; the
+ * backend has never accepted a number, so the label now matches reality.
+ */
+export function Login() {
+  const login = useSession((state) => state.login);
+  const isLoggingIn = useSession((state) => state.isLoggingIn);
+  const loginError = useSession((state) => state.loginError);
+  const [email, setEmail] = useState('');
+  const [pw, setPw] = useState('');
+  const valid = /\S+@\S+\.\S+/.test(email.trim()) && pw.length > 0;
+
+  const submit = async () => {
+    if (!valid || isLoggingIn) return;
+    if (await login(email, pw)) router.replace('/home');
+  };
+
+  // A 422 names the offending field; anything else is a banner above the form.
+  const fieldError = (name: string) => loginError?.fields?.[name];
+  const banner = loginError && !loginError.fields ? loginError.message : null;
+
+  return (
+    <Screen keyboard>
+      <Header title="Welcome back" back={false} />
+      <View style={s.form}>
+        <Text style={s.desc}>Login to manage your shop</Text>
+        {banner && (
+          <View style={s.banner}>
+            <Icon name="alert-circle-outline" size={18} color={colors.danger} />
+            <Text style={s.bannerText}>{banner}</Text>
+          </View>
+        )}
+        <Input
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          textContentType="emailAddress"
+          placeholder="you@shop.com"
+          error={fieldError('email')}
+        />
+        <Input
+          label="Password"
+          value={pw}
+          onChangeText={setPw}
+          secureTextEntry
+          autoCapitalize="none"
+          textContentType="password"
+          placeholder="Enter your password"
+          onSubmitEditing={submit}
+          error={fieldError('password')}
+        />
+        <Link href="/login/forgot-password">
+          <Text style={s.link}>Forgot Password?</Text>
+        </Link>
+        <View style={{ marginTop: 'auto', gap: 15 }}>
+          <Button title="Login" disabled={!valid} loading={isLoggingIn} onPress={submit} />
+          <Text style={s.center}>
+            Don't have an account?{' '}
+            <Text style={s.link} onPress={() => router.push('/signup')}>
+              Create Account
+            </Text>
+          </Text>
+        </View>
+      </View>
+    </Screen>
+  );
+}
+
+/**
+ * The mobile API exposes no registration endpoint — shops are provisioned in
+ * the Muenot ERP, not from the handset. Rather than collect details the app
+ * cannot submit, this explains where an account comes from.
+ */
+export function Signup() {
+  return (
+    <Screen>
+      <Header title="Create Account" />
+      <View style={s.notice}>
+        <View style={s.round}>
+          <Icon name="storefront-outline" size={30} />
+        </View>
+        <Text style={s.heroSmall}>Accounts are set up by Muenot</Text>
+        <Text style={s.desc}>
+          Your shop is created in Muenot ERP along with your login. Contact the Muenot team to have your shop added,
+          then sign in here with the email address they set up for you.
+        </Text>
+        <View style={s.noticeButtons}>
+          <Button title="Login" onPress={() => router.replace('/login')} />
+        </View>
+      </View>
+    </Screen>
+  );
+}
+
+/**
+ * Likewise there is no password-reset endpoint on the mobile API. Showing a
+ * "reset link sent" confirmation would be a lie, so this routes the user to
+ * the people who can actually reset it.
+ */
+export function ForgotPassword() {
+  return (
+    <Screen>
+      <Header title="Forgot Password" />
+      <View style={s.notice}>
+        <View style={s.round}>
+          <Icon name="key-outline" size={30} />
+        </View>
+        <Text style={s.heroSmall}>Reset from the ERP</Text>
+        <Text style={s.desc}>
+          Password resets are handled in Muenot ERP. Ask your shop owner or the Muenot support team to reset it, then
+          sign in here with the new password.
+        </Text>
+        <View style={s.noticeButtons}>
+          <Button title="Back to Login" onPress={() => router.replace('/login')} />
+        </View>
+      </View>
+    </Screen>
+  );
+}
+
+const s = StyleSheet.create({
+  welcome: { flex: 1, padding: 24 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logo: { width: 38, height: 38, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  logoImage: { width: 25, height: 25, borderRadius: 8 },
+  brand: { fontSize: 14, fontWeight: '800', color: colors.text },
+  middle: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 22 },
+  hero: { fontSize: 31, fontWeight: '800', textAlign: 'center', lineHeight: 38, color: colors.text },
+  heroSmall: { fontSize: 20, fontWeight: '800', color: colors.text, textAlign: 'center' },
+  desc: { fontSize: 14, color: colors.muted, lineHeight: 21 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  point: { width: '47%', borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card, padding: 14, alignItems: 'center', gap: 8 },
+  round: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  pointText: { fontSize: 12, fontWeight: '700', textAlign: 'center', color: colors.text },
+  buttons: { gap: 10 },
+  form: { flex: 1, padding: 22, gap: 15 },
+  link: { fontSize: 13, fontWeight: '800', color: colors.primary },
+  center: { fontSize: 13, textAlign: 'center', color: colors.muted },
+  notice: { flex: 1, padding: 32, alignItems: 'center', justifyContent: 'center', gap: 15 },
+  noticeButtons: { alignSelf: 'stretch', gap: 10, marginTop: 8 },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 14, backgroundColor: colors.dangerSoft },
+  bannerText: { flex: 1, fontSize: 13, color: colors.danger, fontWeight: '600', lineHeight: 18 },
+});

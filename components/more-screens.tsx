@@ -1,11 +1,477 @@
-import { useState } from 'react'; import { Alert, Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native'; import { Link, router } from 'expo-router'; import { colors } from '@/constants/theme'; import { Header, Screen, SectionTitle } from './screen'; import { Avatar,MenuItem } from './common'; import { Badge,Button,Card,Icon,Input } from './ui'; import { campaigns,notifications,shop,team,templates } from '@/features/demo/data';
-export function Templates(){const[f,setF]=useState('all');const data=templates.filter(x=>f==='all'||x.status===f);return <Screen><Header title="Templates"/><View style={s.filters}>{['all','approved','pending','rejected'].map(x=><Pressable key={x} onPress={()=>setF(x)} style={[s.filter,f===x&&s.active]}><Text style={[s.filterText,f===x&&s.activeText]}>{x}</Text></Pressable>)}</View><View style={s.pad}>{data.map(x=><Link href={`/more/templates/${x.id}`} key={x.id} asChild><Pressable><Card style={s.gap}><View style={s.row}><Text style={s.name}>{x.name}</Text><Badge tone={x.status==='approved'?'success':x.status==='pending'?'warning':'danger'}>{x.status}</Badge></View><Text style={s.muted} numberOfLines={2}>{x.body}</Text><View style={s.rowStart}><Badge>{x.category}</Badge><Badge>{x.language}</Badge></View></Card></Pressable></Link>)}</View></Screen>}
-export function Campaigns(){return <Screen><Header title="Campaigns" action={<Link href="/more/campaigns/new" asChild><Pressable style={s.add}><Icon name="add" color="#fff"/></Pressable></Link>}/><View style={s.pad}>{campaigns.map(x=><Card key={x.id} style={s.gap}><View style={s.row}><View><Text style={s.name}>{x.name}</Text><Text style={s.muted}>{x.audience}</Text></View><Badge tone={x.status==='completed'?'success':x.status==='scheduled'?'warning':x.status==='running'?'info':'neutral'}>{x.status}</Badge></View>{x.status==='scheduled'?<Text style={s.muted}>Scheduled for {x.scheduledFor}</Text>:<View style={s.stats}><Stat label="Sent" value={x.sent}/><Stat label="Delivered" value={x.delivered}/><Stat label="Read" value={x.read}/></View>}</Card>)}</View></Screen>}
-export function CampaignWizard(){const[step,setStep]=useState(0);const[name,setName]=useState('');const[audience,setAudience]=useState('');const[template,setTemplate]=useState('');const steps=['Details','Audience','Template','Schedule','Review'];const valid=step===0?name.length>1:step===1?!!audience:step===2?!!template:true;return <Screen><Header title="New Campaign" subtitle={`Step ${step+1} of 5 · ${steps[step]}`}/><View style={s.form}>{step===0&&<Input label="Campaign Name" value={name} onChangeText={setName} placeholder="e.g. Diwali Mega Sale"/>}{step===1&&['All customers (412)','VIP customers (58)','Regular customers (140)','New customers (34)'].map(x=><Choice key={x} label={x} selected={audience===x} onPress={()=>setAudience(x)}/>) }{step===2&&templates.filter(x=>x.status==='approved').map(x=><Choice key={x.id} label={x.name} description={x.body} selected={template===x.id} onPress={()=>setTemplate(x.id)}/>) }{step===3&&<><Choice label="Send Immediately" selected onPress={()=>{}}/><Choice label="Schedule for Later" onPress={()=>{}}/></>}{step===4&&<><Card><Text style={s.muted}>Campaign Name</Text><Text style={s.name}>{name}</Text></Card><Card><Text style={s.muted}>Audience</Text><Text style={s.name}>{audience}</Text></Card><Card><Text style={s.muted}>Template</Text><Text style={s.name}>{templates.find(x=>x.id===template)?.name}</Text></Card></>}<View style={{marginTop:'auto'}}><Button title={step===4?'Create Campaign':'Continue'} disabled={!valid} onPress={()=>step===4?(Alert.alert('Created','Campaign created'),router.replace('/more/campaigns')):setStep(step+1)}/></View></View></Screen>}
-export function Automations(){const[list,setList]=useState([{id:'welcome',label:'Welcome Message',when:'A new customer messages you for the first time',enabled:true,icon:'chatbubble-outline'},{id:'away',label:'Away Message',when:'A customer messages you outside business hours',enabled:true,icon:'moon-outline'},{id:'order',label:'Order Confirmation',when:'A new order is created',enabled:true,icon:'bag-check-outline'},{id:'payment',label:'Payment Reminder',when:'Payment is pending for 24 hours',enabled:false,icon:'cash-outline'}]);return <Screen><Header title="Automations"/>{list.map(x=><Card key={x.id} style={s.auto}><View style={s.iconSoft}><Icon name={x.icon as any}/></View><View style={{flex:1}}><Text style={s.name}>{x.label}</Text><Text style={s.muted}>{x.when}</Text></View><Switch value={x.enabled} onValueChange={v=>setList(list.map(a=>a.id===x.id?{...a,enabled:v}:a))} trackColor={{true:colors.primary}}/></Card>)}</Screen>}
-export function Team(){return <Screen><Header title="Team" action={<Pressable style={s.add} onPress={()=>Alert.alert('Invite','Team invitation flow is ready for ERP integration.')}><Icon name="person-add" color="#fff"/></Pressable>}/><View style={s.pad}>{team.map(x=><Card key={x.id} style={s.team}><View style={{position:'relative'}}><Avatar name={x.name}/><View style={[s.online,{backgroundColor:x.status==='online'?colors.success:colors.muted}]}/></View><View style={{flex:1}}><Text style={s.name}>{x.name}</Text><View style={s.rowStart}><Badge>{x.role}</Badge><Text style={s.muted}>{x.assignedChats} chats</Text></View></View><Pressable onPress={()=>Alert.alert(x.name,'Permissions editor will connect to the ERP in the next phase.')}><Icon name="ellipsis-vertical" color={colors.muted}/></Pressable></Card>)}</View></Screen>}
-export function Reports(){const bars=[32,41,28,55,47,63,38];return <Screen><Header title="Reports"/><View style={s.pad}><ReportCard title="Messages" amount="+18% this week" bars={bars}/><ReportCard title="Sales" amount="₹81,880 this week" bars={[8200,10400,6300,14800,12100,17600,12480]}/><View style={s.stats}><Stat label="Total Customers" value={412}/><Stat label="Orders this month" value={156}/></View><Card><Text style={s.name}>Campaign Performance</Text><View style={s.stats}><Stat label="Sent" value={198}/><Stat label="Delivered" value={188}/><Stat label="Read" value={119}/></View></Card></View></Screen>}
-export function Subscription(){const plans=[['Starter','Free',['100 messages/month','1 team member','50 products']],['Growth','₹999/month',['5,000 messages/month','5 team members','Unlimited products','Campaigns & automations']],['Pro','₹2,499/month',['25,000 messages/month','Unlimited team members','Advanced reports']]];return <Screen><Header title="Subscription"/><View style={s.pad}><Card style={{backgroundColor:colors.primarySoft}}><Text style={s.muted}>Current Plan</Text><Text style={s.big}>Growth</Text><Badge tone="success">Active</Badge><Text style={s.muted}>Renews on Nov 4, 2026</Text></Card><SectionTitle>Available Plans</SectionTitle>{plans.map(([name,price,features]:any)=><Card key={name} style={s.gap}><View style={s.row}><View><Text style={s.name}>{name}</Text><Text style={s.muted}>{price}</Text></View>{name==='Growth'&&<Badge>Current</Badge>}</View>{features.map((x:string)=><Text key={x} style={s.muted}>✓ {x}</Text>)}{name!=='Growth'&&<Button title="Upgrade Plan" variant="outline" onPress={()=>Alert.alert('Subscription','Plan changes will be enabled with the ERP billing API.')}/>}</Card>)}</View></Screen>}
-export function Notifications(){return <Screen><Header title="Notifications"/>{notifications.map(x=><View key={x.id} style={[s.note,!x.read&&s.unreadNote]}><View style={s.iconSoft}><Icon name={x.type==='message'?'chatbubble-outline':x.type==='order'?'bag-outline':x.type==='payment'?'cash-outline':x.type==='campaign'?'megaphone-outline':'alert-circle-outline'}/></View><View style={{flex:1}}><Text style={s.name}>{x.title}</Text><Text style={s.muted}>{x.description}</Text><Text style={s.tiny}>{x.time}</Text></View>{!x.read&&<View style={s.noteDot}/>}</View>)}</Screen>}
-function Choice({label,description,selected,onPress}:{label:string;description?:string;selected?:boolean;onPress:()=>void}){return <Pressable onPress={onPress} style={[s.choice,selected&&s.choiceSelected]}><View style={{flex:1}}><Text style={s.name}>{label}</Text>{description&&<Text style={s.muted} numberOfLines={2}>{description}</Text>}</View>{selected&&<Icon name="checkmark-circle"/>}</Pressable>};function Stat({label,value}:{label:string;value:number}){return <View style={s.stat}><Text style={s.name}>{value.toLocaleString('en-IN')}</Text><Text style={s.tiny}>{label}</Text></View>};function ReportCard({title,amount,bars}:{title:string;amount:string;bars:number[]}){const max=Math.max(...bars);return <Card><View style={s.row}><Text style={s.name}>{title}</Text><Badge>{amount}</Badge></View><View style={s.chart}>{bars.map((x,i)=><View key={i} style={s.barWrap}><View style={[s.bar,{height:Math.max(8,70*x/max)}]}/><Text style={s.tiny}>{['M','T','W','T','F','S','S'][i]}</Text></View>)}</View></Card>};
-const s=StyleSheet.create({pad:{padding:16,gap:12},filters:{flexDirection:'row',gap:7,padding:16},filter:{flex:1,paddingVertical:9,alignItems:'center',borderRadius:12,backgroundColor:'#edf1ef'},active:{backgroundColor:colors.primary},filterText:{fontSize:11,fontWeight:'800',color:colors.muted},activeText:{color:'#fff'},gap:{gap:8},row:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:8},rowStart:{flexDirection:'row',alignItems:'center',gap:6},name:{fontSize:15,fontWeight:'800',color:colors.text},muted:{fontSize:13,color:colors.muted,lineHeight:19},tiny:{fontSize:11,color:colors.muted},add:{width:38,height:38,borderRadius:19,backgroundColor:colors.primary,alignItems:'center',justifyContent:'center'},form:{padding:16,flex:1,gap:12},choice:{borderWidth:1,borderColor:colors.border,borderRadius:16,padding:15,flexDirection:'row',gap:10,alignItems:'center'},choiceSelected:{borderColor:colors.primary,backgroundColor:colors.primarySoft},auto:{marginHorizontal:16,marginTop:10,flexDirection:'row',alignItems:'center',gap:11},iconSoft:{width:38,height:38,borderRadius:19,backgroundColor:colors.primarySoft,alignItems:'center',justifyContent:'center'},team:{flexDirection:'row',alignItems:'center',gap:12},online:{position:'absolute',right:-1,bottom:-1,width:12,height:12,borderRadius:6,borderWidth:2,borderColor:'#fff'},stats:{flexDirection:'row',gap:9},stat:{flex:1,backgroundColor:'#f1f4f2',borderRadius:11,padding:10,alignItems:'center'},chart:{height:100,flexDirection:'row',alignItems:'flex-end',gap:8,paddingTop:10},barWrap:{flex:1,alignItems:'center',justifyContent:'flex-end',gap:4},bar:{width:'100%',backgroundColor:colors.primary,borderRadius:4},big:{fontSize:22,fontWeight:'800',color:colors.text},note:{padding:14,flexDirection:'row',gap:12,borderBottomWidth:1,borderBottomColor:colors.border},unreadNote:{backgroundColor:colors.primarySoft},noteDot:{width:8,height:8,borderRadius:4,backgroundColor:colors.primary,marginTop:5}});
+import { useEffect, useRef, useState } from 'react';
+import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Link } from 'expo-router';
+import { colors } from '@/constants/theme';
+import { Header, Screen, SectionTitle } from './screen';
+import { Avatar } from './common';
+import { Badge, Card, EmptyState, Icon } from './ui';
+import { ErrorState, Loading, UnavailableNote } from './states';
+import {
+  useAutomations,
+  useCampaigns,
+  useMarkNotificationsRead,
+  useNotifications,
+  useSubscription,
+  useTeam,
+  useTemplates,
+} from '@/features/queries';
+import { humanDate } from '@/features/mappers';
+import { useSession } from '@/features/session';
+import type { Template } from '@/types/domain';
+
+/**
+ * The read-only Shopkeeper modules.
+ *
+ * Templates, campaigns, automations, team and subscription are GET-only on the
+ * mobile API. Their write controls are therefore disabled with the reason
+ * shown, rather than being wired to something that would fake a result.
+ */
+
+/* -------------------------------------------------------- templates ---- */
+
+const TEMPLATE_FILTERS = ['all', 'approved', 'pending', 'rejected'] as const;
+
+export function Templates() {
+  const { templates, isPending, isRefetching, error, refetch } = useTemplates();
+  const [filter, setFilter] = useState<(typeof TEMPLATE_FILTERS)[number]>('all');
+  const data = templates.filter((x) => filter === 'all' || x.status === filter);
+
+  return (
+    <Screen scroll={false}>
+      <Header title="Templates" />
+      <View style={s.filters}>
+        {TEMPLATE_FILTERS.map((x) => (
+          <Pressable key={x} onPress={() => setFilter(x)} style={[s.filter, filter === x && s.active]}>
+            <Text style={[s.filterText, filter === x && s.activeText]}>{x}</Text>
+          </Pressable>
+        ))}
+      </View>
+      {isPending ? (
+        <Loading label="Loading templates…" />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : (
+        <FlatList
+          contentContainerStyle={s.pad}
+          data={data}
+          keyExtractor={(x) => x.id}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+          ListHeaderComponent={
+            <UnavailableNote>
+              Template approval is managed by Meta and synced by Muenot ERP. Statuses here are read-only.
+            </UnavailableNote>
+          }
+          ListEmptyComponent={
+            <EmptyState
+              icon="document-text-outline"
+              title="No templates"
+              description={filter === 'all' ? 'Templates created in Muenot ERP appear here.' : `No ${filter} templates.`}
+            />
+          }
+          renderItem={({ item }) => <TemplateRow template={item} />}
+        />
+      )}
+    </Screen>
+  );
+}
+
+const templateTone = (status: Template['status']) =>
+  status === 'approved' ? 'success' : status === 'pending' ? 'warning' : status === 'rejected' ? 'danger' : 'neutral';
+
+function TemplateRow({ template }: { template: Template }) {
+  return (
+    <Link href={`/more/templates/${template.id}`} asChild>
+      <Pressable>
+        <Card style={s.gap}>
+          <View style={s.row}>
+            <Text style={[s.name, { flex: 1 }]} numberOfLines={1}>
+              {template.name}
+            </Text>
+            {/* The exact status string Meta returned — never a substitute. */}
+            <Badge tone={templateTone(template.status)}>{template.rawStatus}</Badge>
+          </View>
+          <Text style={s.muted} numberOfLines={2}>
+            {template.body || 'No body text.'}
+          </Text>
+          <View style={s.rowStart}>
+            {!!template.category && <Badge>{template.category}</Badge>}
+            <Badge>{template.language}</Badge>
+          </View>
+        </Card>
+      </Pressable>
+    </Link>
+  );
+}
+
+/* -------------------------------------------------------- campaigns ---- */
+
+export function Campaigns() {
+  const { campaigns, isPending, isRefetching, error, refetch } = useCampaigns();
+
+  return (
+    <Screen scroll={false}>
+      <Header title="Campaigns" />
+      {isPending ? (
+        <Loading label="Loading campaigns…" />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : (
+        <FlatList
+          contentContainerStyle={s.pad}
+          data={campaigns}
+          keyExtractor={(x) => x.id}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+          ListHeaderComponent={
+            <UnavailableNote>
+              Campaigns are created and launched in Muenot ERP, where consent and WhatsApp messaging policy are
+              enforced. This screen shows their progress.
+            </UnavailableNote>
+          }
+          ListEmptyComponent={
+            <EmptyState icon="megaphone-outline" title="No campaigns" description="Campaigns created in Muenot ERP appear here." />
+          }
+          renderItem={({ item }) => (
+            <Card style={s.gap}>
+              <View style={s.row}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.name}>{item.name}</Text>
+                  <Text style={s.muted}>{item.audience}</Text>
+                </View>
+                <Badge
+                  tone={
+                    item.status === 'completed'
+                      ? 'success'
+                      : item.status === 'scheduled'
+                        ? 'warning'
+                        : item.status === 'running'
+                          ? 'info'
+                          : item.status === 'failed'
+                            ? 'danger'
+                            : 'neutral'
+                  }
+                >
+                  {item.rawStatus}
+                </Badge>
+              </View>
+              {item.status === 'scheduled' && item.scheduledFor ? (
+                <Text style={s.muted}>Scheduled for {item.scheduledFor}</Text>
+              ) : (
+                <View style={s.stats}>
+                  <Stat label="Sent" value={item.sent} />
+                  <Stat label="Delivered" value={item.delivered} />
+                  <Stat label="Read" value={item.read} />
+                  <Stat label="Failed" value={item.failed} />
+                </View>
+              )}
+            </Card>
+          )}
+        />
+      )}
+    </Screen>
+  );
+}
+
+/* ------------------------------------------------------- automations --- */
+
+export function Automations() {
+  const { automations, isPending, isRefetching, error, refetch } = useAutomations();
+
+  return (
+    <Screen scroll={false}>
+      <Header title="Automations" />
+      {isPending ? (
+        <Loading label="Loading automations…" />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : (
+        <FlatList
+          contentContainerStyle={s.pad}
+          data={automations}
+          keyExtractor={(x) => x.id}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+          ListHeaderComponent={
+            <UnavailableNote>
+              Automations are configured in Muenot ERP. The switches here reflect their current state and cannot be
+              changed from the app.
+            </UnavailableNote>
+          }
+          ListEmptyComponent={
+            <EmptyState icon="git-network-outline" title="No automations" description="Automations set up in Muenot ERP appear here." />
+          }
+          renderItem={({ item }) => (
+            <Card style={s.auto}>
+              <View style={s.iconSoft}>
+                <Icon name="git-network-outline" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.name}>{item.name}</Text>
+                {/* Built from the backend's trigger/action types only. */}
+                <Text style={s.muted}>{item.description}</Text>
+              </View>
+              <Switch value={item.enabled} disabled trackColor={{ true: colors.primary }} />
+            </Card>
+          )}
+        />
+      )}
+    </Screen>
+  );
+}
+
+/* ------------------------------------------------------------- team ---- */
+
+export function Team() {
+  const { team, isPending, isRefetching, error, refetch } = useTeam();
+  const currentUserId = useSession((state) => state.user?.id);
+
+  return (
+    <Screen scroll={false}>
+      <Header title="Team" />
+      {isPending ? (
+        <Loading label="Loading team…" />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : (
+        <FlatList
+          contentContainerStyle={s.pad}
+          data={team}
+          keyExtractor={(x) => x.id}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+          ListHeaderComponent={
+            <UnavailableNote>
+              Team members, roles and permissions are managed in Muenot ERP, which enforces them for every request.
+            </UnavailableNote>
+          }
+          ListEmptyComponent={<EmptyState icon="people-outline" title="No team members" description="Nobody else has access to this shop yet." />}
+          renderItem={({ item }) => (
+            <Card style={s.team}>
+              <Avatar name={item.name} />
+              <View style={{ flex: 1 }}>
+                <Text style={s.name}>{item.name}</Text>
+                <Text style={s.muted} numberOfLines={1}>
+                  {item.email}
+                </Text>
+                <View style={s.rowStart}>
+                  <Badge>{item.role}</Badge>
+                  {String(item.id) === String(currentUserId) && <Badge tone="primary">You</Badge>}
+                </View>
+              </View>
+            </Card>
+          )}
+        />
+      )}
+    </Screen>
+  );
+}
+
+/* ----------------------------------------------------- subscription ---- */
+
+/** Quotas the shop screen can explain; the rest are ERP-internal. */
+const QUOTA_LABELS: Record<string, string> = {
+  users: 'Users',
+  employees: 'Employees',
+  storage_gb: 'Storage (GB)',
+  api_calls_per_month: 'API calls / month',
+  automations: 'Automations',
+  integrations: 'Integrations',
+  ai_credits_per_month: 'AI credits / month',
+  jobs: 'Background jobs',
+};
+
+export function Subscription() {
+  const { summary, isPending, isRefetching, error, refetch } = useSubscription();
+
+  return (
+    <Screen scroll={false}>
+      <Header title="Subscription" />
+      {isPending ? (
+        <Loading label="Loading subscription…" />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : !summary ? (
+        <EmptyState icon="card-outline" title="No subscription" description="This shop has no subscription record yet." />
+      ) : (
+        <ScrollView
+          contentContainerStyle={s.pad}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+        >
+          <Card style={{ backgroundColor: colors.primarySoft, gap: 6 }}>
+            <Text style={s.muted}>Current Plan</Text>
+            <Text style={s.big}>{summary.planCode.replace(/\b\w/g, (c) => c.toUpperCase())}</Text>
+            <Badge tone={summary.status === 'active' || summary.status === 'trialing' ? 'success' : 'warning'}>
+              {summary.status}
+            </Badge>
+            {summary.currentPeriodEnd && <Text style={s.muted}>Renews on {humanDate(summary.currentPeriodEnd)}</Text>}
+            {summary.trialEnd && <Text style={s.muted}>Trial ends {humanDate(summary.trialEnd)}</Text>}
+            {summary.seats > 0 && <Text style={s.muted}>{summary.seats} seats</Text>}
+          </Card>
+
+          <SectionTitle>Usage & Limits</SectionTitle>
+          {summary.quotas.filter((q) => QUOTA_LABELS[q.key]).length === 0 ? (
+            <Text style={s.muted}>No usage limits are reported for this plan.</Text>
+          ) : (
+            summary.quotas
+              .filter((q) => QUOTA_LABELS[q.key])
+              .map((q) => (
+                <Card key={q.key} style={s.gap}>
+                  <View style={s.row}>
+                    <Text style={s.name}>{QUOTA_LABELS[q.key]}</Text>
+                    <Text style={s.muted}>
+                      {q.usage} / {q.limit === null ? 'Unlimited' : q.limit}
+                    </Text>
+                  </View>
+                  {q.limit !== null && q.limit > 0 && (
+                    <View style={s.bar}>
+                      <View style={[s.barFill, { width: `${Math.min(100, (q.usage / q.limit) * 100)}%` }]} />
+                    </View>
+                  )}
+                </Card>
+              ))
+          )}
+
+          <SectionTitle>Included Features</SectionTitle>
+          {summary.featureFlags.filter((f) => f.startsWith('shopkeeper.')).length === 0 ? (
+            <Text style={s.muted}>No Shopkeeper features are listed on this plan.</Text>
+          ) : (
+            <Card style={s.gap}>
+              {summary.featureFlags
+                .filter((f) => f.startsWith('shopkeeper.'))
+                .map((f) => (
+                  <Text key={f} style={s.muted}>
+                    ✓ {f.replace('shopkeeper.', '').replace(/_/g, ' ')}
+                  </Text>
+                ))}
+            </Card>
+          )}
+
+          <UnavailableNote>
+            Plan changes and billing are handled in Muenot ERP. The app does not process payments.
+          </UnavailableNote>
+        </ScrollView>
+      )}
+    </Screen>
+  );
+}
+
+/* ---------------------------------------------------- notifications ---- */
+
+const NOTIFICATION_ICON = {
+  message: 'chatbubble-outline',
+  order: 'bag-outline',
+  payment: 'cash-outline',
+  campaign: 'megaphone-outline',
+  whatsapp: 'logo-whatsapp',
+  general: 'notifications-outline',
+} as const;
+
+export function Notifications() {
+  const { notifications, unread, isPending, isRefetching, error, refetch } = useNotifications();
+  const markRead = useMarkNotificationsRead();
+  const marked = useRef(false);
+
+  // Opening the centre marks everything read once, via PATCH /notifications.
+  // Guarded by a ref because the mutation object is new on every render.
+  useEffect(() => {
+    if (marked.current || unread === 0) return;
+    marked.current = true;
+    markRead.mutate(undefined);
+  }, [unread, markRead]);
+
+  return (
+    <Screen scroll={false}>
+      <Header title="Notifications" />
+      {isPending ? (
+        <Loading label="Loading notifications…" />
+      ) : error ? (
+        <ErrorState error={error} onRetry={refetch} />
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(x) => x.id}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
+          ListEmptyComponent={
+            <EmptyState icon="notifications-outline" title="Nothing new" description="Alerts about messages, orders and payments appear here." />
+          }
+          renderItem={({ item }) => (
+            <View style={[s.note, !item.read && s.unreadNote]}>
+              <View style={s.iconSoft}>
+                <Icon name={NOTIFICATION_ICON[item.type]} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.name}>{item.title}</Text>
+                {!!item.description && <Text style={s.muted}>{item.description}</Text>}
+                <Text style={s.tiny}>{item.time}</Text>
+              </View>
+              {!item.read && <View style={s.noteDot} />}
+            </View>
+          )}
+        />
+      )}
+    </Screen>
+  );
+}
+
+/* --------------------------------------------------------- reports ----- */
+
+/**
+ * The mobile API exposes no reports endpoint. Rather than draw invented bar
+ * charts, this shows the figures the dashboard does return and says where the
+ * full reports live.
+ */
+export function Reports() {
+  const { summary } = useSubscription();
+  return (
+    <Screen>
+      <Header title="Reports" />
+      <View style={s.pad}>
+        <UnavailableNote>
+          Detailed reporting is not part of the mobile API yet. Today's figures are on the Home screen; full reports are
+          available in Muenot ERP.
+        </UnavailableNote>
+        {summary && (
+          <Card style={s.gap}>
+            <Text style={s.name}>Plan</Text>
+            <Text style={s.muted}>
+              {summary.planCode} · {summary.status}
+            </Text>
+          </Card>
+        )}
+      </View>
+    </Screen>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <View style={s.stat}>
+      <Text style={s.name}>{value.toLocaleString('en-IN')}</Text>
+      <Text style={s.tiny}>{label}</Text>
+    </View>
+  );
+}
+
+const s = StyleSheet.create({
+  pad: { padding: 16, gap: 12 },
+  filters: { flexDirection: 'row', gap: 7, padding: 16 },
+  filter: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 12, backgroundColor: '#edf1ef' },
+  active: { backgroundColor: colors.primary },
+  filterText: { fontSize: 11, fontWeight: '800', color: colors.muted, textTransform: 'capitalize' },
+  activeText: { color: '#fff' },
+  gap: { gap: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  rowStart: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  name: { fontSize: 15, fontWeight: '800', color: colors.text },
+  muted: { fontSize: 13, color: colors.muted, lineHeight: 19 },
+  tiny: { fontSize: 11, color: colors.muted },
+  error: { fontSize: 12, color: colors.danger },
+  auto: { flexDirection: 'row', alignItems: 'center', gap: 11 },
+  iconSoft: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  team: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  stats: { flexDirection: 'row', gap: 9 },
+  stat: { flex: 1, backgroundColor: '#f1f4f2', borderRadius: 11, padding: 10, alignItems: 'center' },
+  big: { fontSize: 22, fontWeight: '800', color: colors.text },
+  bar: { height: 6, borderRadius: 3, backgroundColor: '#e7ece9', overflow: 'hidden' },
+  barFill: { height: 6, borderRadius: 3, backgroundColor: colors.primary },
+  note: { padding: 14, flexDirection: 'row', gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  unreadNote: { backgroundColor: colors.primarySoft },
+  noteDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary, marginTop: 5 },
+});

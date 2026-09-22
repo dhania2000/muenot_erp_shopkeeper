@@ -1,2 +1,189 @@
-import { useState } from 'react'; import { Alert,StyleSheet,Text,View } from 'react-native'; import { router } from 'expo-router'; import { colors } from '@/constants/theme'; import { Button,Input,Badge,Icon } from './ui'; import { Header,Screen } from './screen';
-const titles=['Shop Details','Location','Business','WhatsApp'];export function Onboarding({step}:{step:0|1|2|3}){const[name,setName]=useState('');const[category,setCategory]=useState('');const[address,setAddress]=useState('');const[city,setCity]=useState('');const[pin,setPin]=useState('');const valid=step===0?name.length>1&&category.length>0:step===1?address.length>3&&city.length>1&&pin.length>=6:true;const next=['/onboarding/location','/onboarding/business','/onboarding/whatsapp','/home'][step];return <Screen keyboard><Header title="Shop Setup"/><View style={s.progress}>{titles.map((x,i)=><View key={x} style={[s.bar,i<=step&&s.done]}/>)}</View><Text style={s.step}>Step {step+1} of 4 · {titles[step]}</Text><View style={s.form}>{step===0&&<><Input label="Shop Name" value={name} onChangeText={setName} placeholder="Sharma General Store"/><Input label="Owner Name" placeholder="Rajesh Sharma"/><Input label="Business Category" value={category} onChangeText={setCategory} placeholder="Kirana Store"/></>}{step===1&&<><Input label="Address" multiline value={address} onChangeText={setAddress} placeholder="Shop no. 12, Main Market Road"/><Input label="City" value={city} onChangeText={setCity} placeholder="Lucknow"/><Input label="State" placeholder="Uttar Pradesh"/><Input label="PIN Code" value={pin} onChangeText={setPin} keyboardType="numeric" placeholder="226001"/></>}{step===2&&<><Input label="GSTIN" placeholder="22AAAAA0000A1Z5"/><Input label="Website" placeholder="www.yourshop.com"/><Input label="Business Hours" value="10:00 AM - 9:00 PM"/><Input label="Currency" value="INR (₹) - Indian Rupee" editable={false}/><Input label="Timezone" value="Asia/Kolkata (GMT+5:30)" editable={false}/></>}{step===3&&<WhatsApp/>}{step!==3&&<View style={s.bottom}><Button title="Continue" disabled={!valid} onPress={()=>router.push(next as any)}/></View>}</View></Screen>};function WhatsApp(){const[connected,setConnected]=useState(false);return <View style={s.wa}><View style={s.circle}><Icon name="logo-whatsapp" size={31}/></View><Text style={s.waTitle}>Connect your WhatsApp</Text><Text style={s.desc}>Connect your business WhatsApp number to receive and reply to customer messages from Muenot.</Text><View style={s.connection}><View><Text style={s.waTitle}>WhatsApp Business</Text><Text style={s.desc}>{connected?'Messaging ready':'Not connected yet'}</Text></View><Badge tone={connected?'success':'warning'}>{connected?'Ready':'Pending'}</Badge></View>{connected?<Button title="Go to Dashboard" onPress={()=>router.replace('/home')}/>:<><Button title="Connect WhatsApp" onPress={()=>{setConnected(true);Alert.alert('Connected','WhatsApp is ready.')}}/><Button title="Do This Later" variant="ghost" onPress={()=>router.replace('/home')}/></>}</View>};const s=StyleSheet.create({progress:{paddingHorizontal:24,paddingTop:18,flexDirection:'row',gap:6},bar:{height:6,flex:1,borderRadius:3,backgroundColor:'#e7ece9'},done:{backgroundColor:colors.primary},step:{paddingHorizontal:24,paddingTop:9,fontSize:12,fontWeight:'700',color:colors.muted},form:{padding:24,gap:15,flex:1},bottom:{marginTop:'auto'},wa:{alignItems:'center',gap:16,paddingTop:20},circle:{width:66,height:66,borderRadius:33,alignItems:'center',justifyContent:'center',backgroundColor:colors.primarySoft},waTitle:{fontSize:16,fontWeight:'800',color:colors.text},desc:{fontSize:14,lineHeight:21,color:colors.muted,textAlign:'center'},connection:{width:'100%',borderWidth:1,borderColor:colors.border,borderRadius:16,padding:15,flexDirection:'row',justifyContent:'space-between',alignItems:'center'}});
+import { useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { colors } from '@/constants/theme';
+import { Badge, Button, Icon, Input } from './ui';
+import { Header, Screen } from './screen';
+import { ErrorState, Loading, UnavailableNote } from './states';
+import { useShop, useUpdateShopProfile, useWhatsApp } from '@/features/queries';
+import { useIsTenantAdmin } from '@/features/session';
+import { WHATSAPP_STATUS_LABEL, whatsAppTone } from '@/features/mappers';
+import { errorMessage, isApiError } from '@/services/api/errors';
+
+/**
+ * Shop setup. Each step PATCHes the tenant profile, so a shopkeeper who quits
+ * halfway keeps what they already entered. Only fields the backend stores are
+ * collected — currency and timezone are free text because the profile accepts
+ * them as strings and the API offers no list to choose from.
+ */
+const titles = ['Shop Details', 'Location', 'Business', 'WhatsApp'];
+const NEXT = ['/onboarding/location', '/onboarding/business', '/onboarding/whatsapp', '/home'] as const;
+
+export function Onboarding({ step }: { step: 0 | 1 | 2 | 3 }) {
+  const { shop, isPending, isError, error, refetch } = useShop();
+
+  if (isPending) {
+    return (
+      <Screen scroll={false}>
+        <Header title="Shop Setup" />
+        <Loading />
+      </Screen>
+    );
+  }
+  if (isError) {
+    return (
+      <Screen scroll={false}>
+        <Header title="Shop Setup" />
+        <ErrorState error={error} onRetry={refetch} />
+      </Screen>
+    );
+  }
+  return <OnboardingStep key={step} step={step} shop={shop} />;
+}
+
+function OnboardingStep({ step, shop }: { step: 0 | 1 | 2 | 3; shop: ReturnType<typeof useShop>['shop'] }) {
+  const update = useUpdateShopProfile();
+  const canEdit = useIsTenantAdmin();
+
+  const [shopName, setShopName] = useState(shop.name);
+  const [ownerName, setOwnerName] = useState(shop.owner);
+  const [businessCategory, setCategory] = useState(shop.category);
+  const [address, setAddress] = useState(shop.address ?? '');
+  const [city, setCity] = useState(shop.city);
+  const [state, setState] = useState(shop.state);
+  const [pinCode, setPin] = useState(shop.pinCode ?? '');
+  const [country, setCountry] = useState(shop.country ?? 'India');
+  const [gstin, setGstin] = useState(shop.gstin ?? '');
+  const [website, setWebsite] = useState(shop.website ?? '');
+  const [currency, setCurrency] = useState(shop.currency ?? 'INR');
+  const [timezone, setTimezone] = useState(shop.timezone ?? 'Asia/Kolkata');
+
+  const fieldError = (name: string) => (isApiError(update.error) ? update.error.fields?.[name] : undefined);
+
+  const valid =
+    step === 0
+      ? shopName.trim().length > 1
+      : step === 1
+        ? address.trim().length > 3 && city.trim().length > 1
+        : true;
+
+  const patchFor = () =>
+    step === 0
+      ? { shopName: shopName.trim(), ownerName: ownerName.trim(), businessCategory: businessCategory.trim() }
+      : step === 1
+        ? { address: address.trim(), city: city.trim(), state: state.trim(), pinCode: pinCode.trim(), country: country.trim() }
+        : { gstin: gstin.trim(), website: website.trim(), currency: currency.trim(), timezone: timezone.trim() };
+
+  const advance = () => {
+    if (!canEdit) return router.push(NEXT[step] as never);
+    update.mutate(patchFor(), {
+      // Only move on once the profile has actually been saved.
+      onSuccess: () => router.push(NEXT[step] as never),
+      onError: (e) => {
+        if (isApiError(e) && e.fields) return;
+        Alert.alert('Not saved', errorMessage(e));
+      },
+    });
+  };
+
+  return (
+    <Screen keyboard>
+      <Header title="Shop Setup" />
+      <View style={s.progress}>
+        {titles.map((x, i) => (
+          <View key={x} style={[s.bar, i <= step && s.done]} />
+        ))}
+      </View>
+      <Text style={s.step}>
+        Step {step + 1} of 4 · {titles[step]}
+      </Text>
+      <View style={s.form}>
+        {!canEdit && step !== 3 && (
+          <UnavailableNote>Only the shop owner or an admin can change these details. You can continue without editing.</UnavailableNote>
+        )}
+
+        {step === 0 && (
+          <>
+            <Input label="Shop Name" value={shopName} onChangeText={setShopName} editable={canEdit} placeholder="Sharma General Store" error={fieldError('shopName')} />
+            <Input label="Owner Name" value={ownerName} onChangeText={setOwnerName} editable={canEdit} placeholder="Rajesh Sharma" />
+            <Input label="Business Category" value={businessCategory} onChangeText={setCategory} editable={canEdit} placeholder="Kirana Store" />
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <Input label="Address" multiline value={address} onChangeText={setAddress} editable={canEdit} placeholder="Shop no. 12, Main Market Road" />
+            <Input label="City" value={city} onChangeText={setCity} editable={canEdit} placeholder="Lucknow" />
+            <Input label="State" value={state} onChangeText={setState} editable={canEdit} placeholder="Uttar Pradesh" />
+            <Input label="PIN Code" value={pinCode} onChangeText={setPin} keyboardType="numeric" editable={canEdit} placeholder="226001" />
+            <Input label="Country" value={country} onChangeText={setCountry} editable={canEdit} placeholder="India" />
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <Input label="GSTIN" value={gstin} onChangeText={setGstin} autoCapitalize="characters" editable={canEdit} placeholder="22AAAAA0000A1Z5" error={fieldError('gstin')} />
+            <Input label="Website" value={website} onChangeText={setWebsite} autoCapitalize="none" keyboardType="url" editable={canEdit} placeholder="www.yourshop.com" />
+            <Input label="Currency" value={currency} onChangeText={setCurrency} autoCapitalize="characters" editable={canEdit} placeholder="INR" />
+            <Input label="Timezone" value={timezone} onChangeText={setTimezone} autoCapitalize="none" editable={canEdit} placeholder="Asia/Kolkata" />
+            <Text style={s.hint}>Business hours can be set later under Settings → Business Hours.</Text>
+          </>
+        )}
+
+        {step === 3 && <WhatsAppStep />}
+
+        {step !== 3 && (
+          <View style={s.bottom}>
+            <Button title="Continue" disabled={!valid} loading={update.isPending} onPress={advance} />
+          </View>
+        )}
+      </View>
+    </Screen>
+  );
+}
+
+/**
+ * Read-only: connecting a number requires the Meta credentials that live in
+ * Muenot ERP, so this reports the real status rather than offering a button
+ * that would only pretend to connect.
+ */
+function WhatsAppStep() {
+  const { status, health, isPending } = useWhatsApp();
+  const ready = status === 'messaging-ready' || status === 'connected';
+
+  return (
+    <View style={s.wa}>
+      <View style={s.circle}>
+        <Icon name="logo-whatsapp" size={31} />
+      </View>
+      <Text style={s.waTitle}>Connect your WhatsApp</Text>
+      <Text style={s.desc}>
+        Your business WhatsApp number is connected in Muenot ERP. Once it is linked, customer messages arrive in your
+        inbox here.
+      </Text>
+      <View style={s.connection}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.waTitle}>WhatsApp Business</Text>
+          <Text style={s.desc}>{health?.phone?.displayPhoneNumber ?? (isPending ? 'Checking…' : 'No number connected')}</Text>
+        </View>
+        <Badge tone={whatsAppTone(status)}>{WHATSAPP_STATUS_LABEL[status]}</Badge>
+      </View>
+      <Button title={ready ? 'Go to Dashboard' : 'Continue to Dashboard'} onPress={() => router.replace('/home')} />
+    </View>
+  );
+}
+
+const s = StyleSheet.create({
+  progress: { paddingHorizontal: 24, paddingTop: 18, flexDirection: 'row', gap: 6 },
+  bar: { height: 6, flex: 1, borderRadius: 3, backgroundColor: '#e7ece9' },
+  done: { backgroundColor: colors.primary },
+  step: { paddingHorizontal: 24, paddingTop: 9, fontSize: 12, fontWeight: '700', color: colors.muted },
+  form: { padding: 24, gap: 15, flex: 1 },
+  bottom: { marginTop: 'auto' },
+  hint: { fontSize: 12, color: colors.muted },
+  wa: { alignItems: 'center', gap: 16, paddingTop: 20 },
+  circle: { width: 66, height: 66, borderRadius: 33, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
+  waTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
+  desc: { fontSize: 14, lineHeight: 21, color: colors.muted, textAlign: 'center' },
+  connection: { width: '100%', borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 15, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+});

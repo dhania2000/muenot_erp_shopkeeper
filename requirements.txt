@@ -1,0 +1,205 @@
+================================================================================
+MUENOT SHOPKEEPER — REQUIREMENTS
+Native Android/iOS app (React Native + Expo + Expo Router)
+Last verified: 2026-09-22 (API integration)
+================================================================================
+
+This file lists everything needed to install, run, build and finish the app.
+Node/Expo projects declare their packages in package.json — this file exists as
+a single human-readable checklist covering the toolchain, the environment and
+the external services the app still depends on.
+
+
+--------------------------------------------------------------------------------
+1. SYSTEM PREREQUISITES
+--------------------------------------------------------------------------------
+
+Node.js          >= 22.13.0  (declared in package.json "engines")
+                 Node 22 LTS is RECOMMENDED. The project bundles correctly on
+                 Node 24.15.0, but Expo SDK 57 / React Native 0.86 are not
+                 certified on Node 24.x. If Metro or the installer misbehaves,
+                 drop to Node 22 LTS before debugging anything else.
+
+npm              >= 10  (ships with Node 22; verified on npm 11.12.1)
+
+Git              any recent version
+
+JDK 17           Required to compile the Android app. Recent Android Studio
+                 installs bundle a suitable JDK; otherwise install Temurin 17
+                 and point JAVA_HOME at it.
+
+Android Studio   Required for `npm run android` and for any emulator.
++ Android SDK    Install via Android Studio > SDK Manager. Set ANDROID_HOME
+                 (Windows default: %LOCALAPPDATA%\Android\Sdk) and put
+                 platform-tools on PATH so `adb` resolves.
+
+                 NOT REQUIRED for: npm install, typecheck, tests,
+                 check:native, or `expo export`. Those run on Node alone.
+
+macOS + Xcode    Only if you intend to build for iOS. The app declares an iOS
+                 bundle identifier (com.muenot.shopkeeper) but has so far only
+                 been exercised on Android.
+
+Physical device  Requires a development build, not Expo Go: the app uses
+                 expo-secure-store, a native module Expo Go does not ship.
+                 See section 6.
+
+
+--------------------------------------------------------------------------------
+2. SETUP
+--------------------------------------------------------------------------------
+
+    git clone <repo>
+    cd muenot_erp_shopkeeper
+    cp .env.example .env
+    npm install
+
+Then either:
+
+    npm start              # Metro dev server; scan the QR or press a/i
+    npm run android        # build + install a dev client on device/emulator
+
+
+--------------------------------------------------------------------------------
+3. ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------------
+
+Copy .env.example to .env. Only EXPO_PUBLIC_* variables are readable by the app.
+.env is gitignored. Never put secrets here — anything prefixed EXPO_PUBLIC_ is
+embedded in the shipped JavaScript bundle and is readable by anyone with the APK.
+
+    EXPO_PUBLIC_APP_ENV          development | staging | production
+                                 Default: development
+
+    EXPO_PUBLIC_API_BASE_URL     Base URL of the Muenot ERP mobile API.
+                                 Production (and the built-in default):
+                                 https://erp.muenot.co.in/api/mobile/v1
+
+    EXPO_PUBLIC_API_TIMEOUT_MS   Per-request timeout. Optional; default 20000.
+
+Build profiles in eas.json set EXPO_PUBLIC_APP_ENV per environment
+(development / staging / production).
+
+
+--------------------------------------------------------------------------------
+4. RUNTIME DEPENDENCIES
+--------------------------------------------------------------------------------
+
+Installed by `npm install`; exact versions are pinned in package-lock.json.
+
+  Core
+    expo                                    ~57.0.24
+    expo-router                             ~57.0.22    file-based routing
+    react                                   19.2.3
+    react-native                            0.86.3
+    typescript                              ~6.0.3
+    @types/react                            ~19.2.4
+
+  Expo modules
+    expo-constants                          ~57.0.19
+    expo-font                               ~57.0.4
+    expo-image-picker                       ~57.0.19    product photo capture
+    expo-linking                            ~57.0.10
+    expo-splash-screen                      ~57.0.9
+    expo-status-bar                         ~57.0.1
+
+  Navigation / UI
+    react-native-safe-area-context          ~5.7.0
+    react-native-screens                    ~4.26.0
+    @expo/vector-icons                      ^15.0.2     Ionicons
+
+  State + data
+    zustand                                 ^5.0.15     session store
+    @tanstack/react-query                   ^5.103.2    server state, caching
+    expo-secure-store                       ~57.0.4     OS keystore for tokens
+    @react-native-community/netinfo         12.0.1      network reachability
+
+    AsyncStorage was removed with the demo fixture it persisted. Session
+    tokens live in expo-secure-store and must never move to AsyncStorage.
+
+  Dependency override
+    react-dom                               19.2.3
+      expo-router pulls react-dom (for its web support) and npm resolved it to
+      19.3.0, which conflicts with react 19.2.3 and makes `npm install <pkg>`
+      fail with ERESOLVE. The "overrides" block in package.json pins react-dom
+      to match react. Keep these two versions in lockstep when upgrading.
+      react-dom is never bundled into the Android/iOS build.
+
+
+--------------------------------------------------------------------------------
+5. VERIFICATION
+--------------------------------------------------------------------------------
+
+All four run on Node alone — no Android SDK, emulator or device required:
+
+    npm run typecheck      tsc --noEmit, strict mode
+    npm run check:native   bans next/*, react-dom, @shadcn and DOM tags in
+                           app/, components/, features/, types/, services/.
+                           This guard is what stops web-isms creeping back in
+                           from the Next.js codebase this app was ported from.
+                           Re-run it after any component change.
+    npm test               node --test over tests/*.test.mjs
+    npm run export:android production-like Hermes bundle into dist/
+
+The test suite runs the .ts sources directly using Node's built-in type
+stripping — there is no build step. This works because the modules under test
+(features/filters.ts, features/metrics.ts, features/mappers.ts,
+services/api/errors.ts) import types with `import type`, so the `@/` path alias
+never needs to resolve at runtime. Keep it that way: a value import from an
+aliased path will break `npm test`.
+
+
+--------------------------------------------------------------------------------
+6. PLATFORM NOTES
+--------------------------------------------------------------------------------
+
+expo-secure-store is a native module and is NOT included in Expo Go, so the
+app needs a development build (`npm run android`) or an EAS build. Rebuild the
+native project after pulling the change that added it.
+
+android/ and ios/ are gitignored — native projects are generated, not checked
+in. Regenerate with `npx expo prebuild` or let `expo run:android` do it.
+
+
+--------------------------------------------------------------------------------
+7. EXTERNAL DEPENDENCIES
+--------------------------------------------------------------------------------
+
+  MUENOT ERP MOBILE API                                            CONNECTED
+    https://erp.muenot.co.in/api/mobile/v1
+    Contract: muenot_erp/docs/openapi-mobile-v1.yaml plus the handlers under
+    muenot_erp/app/api/mobile/v1. Auth is email + password, returning a 15
+    minute JWT access token and a 30 day opaque refresh token that ROTATES on
+    every use.
+
+    A working shopkeeper account is needed to exercise the app. Accounts are
+    provisioned in Muenot ERP — the mobile API has no registration endpoint.
+
+    Not exposed by the mobile API, so not available in the app:
+      - registration and password reset
+      - image upload for product photos
+      - creating or editing templates, campaigns, automations and team members
+      - a reports endpoint
+
+  META WHATSAPP BUSINESS PLATFORM                          BACKEND-SIDE ONLY
+    The app never contacts Meta and holds no Meta credentials. Sending goes
+    Android -> Muenot API -> Muenot WhatsApp service -> Meta Cloud API. The
+    number is connected in Muenot ERP; the app reads status from GET /whatsapp.
+
+  PLAY CONSOLE / APP STORE                                    BLOCKS RELEASE
+    - Google Play developer account and signing keys
+    - Expo account + EAS project for `eas build` (eas.json already has
+      development / staging / production profiles)
+
+
+8. KNOWN CONSTRAINTS
+--------------------------------------------------------------------------------
+
+- Authentication is live. Login calls POST /auth/login, tokens are held in
+  expo-secure-store, and a failed refresh clears the session and returns to
+  Login. There is no offline write queue: a mutation attempted with no network
+  fails and is reported, never silently queued.
+- `npm audit` reports moderate advisories in the transitive dev/build tree.
+  None affect the shipped bundle; review before release.
+- Source is deliberately written as dense one-liners: route files delegate to
+  component barrels in components/. Match the surrounding style when editing.
