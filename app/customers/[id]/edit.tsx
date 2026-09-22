@@ -1,1 +1,1 @@
-import { useLocalSearchParams } from 'expo-router'; import { CustomerForm } from '@/components/forms'; import { customers } from '@/features/demo/data'; export default function(){const{id}=useLocalSearchParams<{id:string}>();return <CustomerForm customer={customers.find(x=>x.id===id)}/>}
+import { useLocalSearchParams } from 'expo-router'; import { CustomerForm } from '@/components/forms'; export default function(){const{id}=useLocalSearchParams<{id:string}>();return <CustomerForm id={id}/>}

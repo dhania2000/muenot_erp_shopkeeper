@@ -1,1 +1,1 @@
-import { Login } from '@/components/auth'; export default function(){return <Login signup/>}
+import { Signup } from '@/components/auth'; export default Signup;
