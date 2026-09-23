@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/services/api/endpoints';
 import { ApiError, isApiError } from '@/services/api/errors';
+import { setBackendUnreadBadge } from '@/services/notifications';
 import { useSession, type ShopkeeperFeature } from './session';
 import {
   toAutomation,
@@ -553,6 +554,9 @@ export function useNotifications() {
     enabled,
     staleTime: 30_000,
   });
+  useEffect(() => {
+    if (enabled && typeof query.data?.unread === 'number') setBackendUnreadBadge(query.data.unread);
+  }, [enabled, query.data?.unread]);
   return {
     ...query,
     notifications: useMemo(() => (query.data?.notifications ?? []).map(toNotification), [query.data]),

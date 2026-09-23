@@ -10,9 +10,18 @@ const positiveInt = (value: string | undefined, fallback: number) => {
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
 };
 
+const environment = process.env.EXPO_PUBLIC_APP_ENV ?? 'development';
+const configuredApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
+
+if (environment === 'staging' && !configuredApiBaseUrl) {
+  throw new Error('Staging requires EXPO_PUBLIC_API_BASE_URL.');
+}
+
 export const appConfig = {
-  environment: process.env.EXPO_PUBLIC_APP_ENV ?? 'development',
-  apiBaseUrl: trimSlash(process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL),
+  environment,
+  apiBaseUrl: environment === 'production'
+    ? DEFAULT_API_BASE_URL
+    : trimSlash(configuredApiBaseUrl || DEFAULT_API_BASE_URL),
   apiTimeoutMs: positiveInt(process.env.EXPO_PUBLIC_API_TIMEOUT_MS, 20_000),
 } as const;
 

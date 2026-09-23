@@ -179,6 +179,7 @@ export interface NotificationItem {
   time: string
   type: "message" | "order" | "payment" | "campaign" | "whatsapp" | "general"
   read: boolean
+  destination?: string
 }
 
 export interface BusinessHoursDay {

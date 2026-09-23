@@ -21,6 +21,12 @@ needs a development build.
     EXPO_PUBLIC_APP_ENV        development | staging | production
     EXPO_PUBLIC_API_BASE_URL   https://erp.muenot.co.in/api/mobile/v1
     EXPO_PUBLIC_API_TIMEOUT_MS 20000 (optional)
+    GOOGLE_SERVICES_JSON       path to the private Android Firebase config file (native build only)
+
+Production builds always use `https://erp.muenot.co.in/api/mobile/v1`.
+Set `EXPO_PUBLIC_API_BASE_URL` for a development backend. Staging requires
+this variable explicitly so a staging build cannot silently use production;
+the staging EAS profile reads the `preview` environment.
 
 Everything prefixed `EXPO_PUBLIC_` is embedded in the shipped bundle and is
 readable by anyone with the APK. No secret belongs in `.env`. The app holds no
@@ -90,6 +96,41 @@ timeout, retries only what is safe to repeat, and turns every failure into an
 `ApiError` with a `kind` the UI branches on.
 
 Tokens live in the OS keystore via `expo-secure-store`, never in AsyncStorage.
+
+### Android push notifications
+
+The app follows the ERP [mobile push contract](https://github.com/dhania2000/muenot_erp/blob/main/docs/shopkeeper-mobile-push.md).
+After a valid login or session restore it requests Android notification
+permission once, obtains the **native FCM token** on a physical Android device,
+and sends `deviceId`, `pushToken`, `pushProvider: "fcm"`, `platform: "android"`,
+`appVersion`, and `deviceName` to `POST /devices`. A stable random `deviceId`
+is stored in SecureStore. Token rotation uses `PATCH /devices` with that same
+ID. Logout calls `DELETE /devices` with that ID before `POST /auth/logout`.
+An unavailable push service never blocks using the app.
+
+To build for Android push, create a Firebase Android app for
+`com.muenot.shopkeeper`, enable FCM, and supply its `google-services.json` as
+the EAS **file** variable `GOOGLE_SERVICES_JSON` in the build environment.
+For a local native build, set `GOOGLE_SERVICES_JSON` to a private file path.
+This repository does not contain a Firebase service-account key. The ERP
+server separately needs its FCM credentials, migration, and delivery worker.
+
+Backend FCM messages include `notification.title/body` and `data.type` plus
+optional `data.conversationId`. Android displays the backend notification in
+the background. In the foreground, the app shows it and invalidates the
+conversation, dashboard, and notification queries; it never inserts a local
+chat message. A WhatsApp notification tap waits for session restoration and
+opens the existing `/inbox/[id]` screen. That screen fetches the conversation
+through the authorized API. The Notification Center remains backed by
+`GET/PATCH /notifications`, and the app badge is set from its server unread
+count.
+
+Physical-device verification still needs a configured Firebase build and an
+authenticated Shopkeeper account: check fresh login, restore, token rotation,
+foreground/background/terminated WhatsApp push, exact chat routing, unread
+count, logout, and switching users on the same phone. Offline logout cannot
+revoke a server registration until the backend is reachable; a later login
+may receive HTTP 409 if the old user's token is still active.
 
 ### Tenancy and entitlements
 

@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { api } from '@/services/api/endpoints';
 import { adoptTokens, clearSession, forceRefresh, loadSession, onSessionExpired, peekSession } from '@/services/api/client';
 import { ApiError, isApiError } from '@/services/api/errors';
+import { clearLocalNotificationState, resetAfterLogout, revokeCurrentDevice } from '@/services/notifications';
 import type { ApiTenant, ApiUser, FeatureResolution } from '@/types/api';
 
 /**
@@ -90,6 +91,7 @@ export const useSession = create<SessionState>()((set, get) => ({
     } catch (error) {
       if (isApiError(error) && error.kind === 'unauthorized') {
         await clearSession();
+        await clearLocalNotificationState();
         set({ user: null, tenant: null, entitlements: [], featureFlags: null, isAuthenticated: false });
       }
       // A network failure at launch must not wipe a valid session; the user
@@ -109,9 +111,8 @@ export const useSession = create<SessionState>()((set, get) => ({
         platform: Platform.OS,
       });
       await adoptTokens(result);
-      set({ user: result.user, tenant: result.tenant, isAuthenticated: true });
-      // Identity and entitlements are loaded after the tokens land so the
-      // first authenticated screen already has them.
+      // /me validates the new bearer session before the notification
+      // coordinator treats this account as authenticated.
       await get().reloadIdentity();
       return true;
     } catch (error) {
@@ -126,14 +127,16 @@ export const useSession = create<SessionState>()((set, get) => ({
   },
 
   logout: async () => {
-    // Revoke server-side first, but never let a failure strand the user in a
-    // session they asked to leave.
+    // The device DELETE is scoped by this bearer session; perform it before
+    // revoking that session. A failed network call never blocks local logout.
     try {
+      await revokeCurrentDevice();
       if (peekSession()) await api.auth.logout();
     } catch {
       /* offline or already revoked */
     }
     await clearSession();
+    resetAfterLogout();
     set({
       user: null,
       tenant: null,
@@ -218,6 +221,7 @@ export const useIsTenantAdmin = () => useSession(isTenantAdmin);
  */
 export function bindSessionExpiry() {
   return onSessionExpired(() => {
+    void clearLocalNotificationState();
     useSession.setState({
       user: null,
       tenant: null,

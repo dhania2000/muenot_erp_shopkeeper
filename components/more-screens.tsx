@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router, type Href } from 'expo-router';
 import { colors } from '@/constants/theme';
 import { Header, Screen, SectionTitle } from './screen';
 import { Avatar } from './common';
@@ -392,7 +392,11 @@ export function Notifications() {
             <EmptyState icon="notifications-outline" title="Nothing new" description="Alerts about messages, orders and payments appear here." />
           }
           renderItem={({ item }) => (
-            <View style={[s.note, !item.read && s.unreadNote]}>
+            <Pressable
+              style={[s.note, !item.read && s.unreadNote]}
+              disabled={!item.destination}
+              onPress={() => item.destination && router.push(item.destination as Href)}
+            >
               <View style={s.iconSoft}>
                 <Icon name={NOTIFICATION_ICON[item.type]} />
               </View>
@@ -402,7 +406,7 @@ export function Notifications() {
                 <Text style={s.tiny}>{item.time}</Text>
               </View>
               {!item.read && <View style={s.noteDot} />}
-            </View>
+            </Pressable>
           )}
         />
       )}

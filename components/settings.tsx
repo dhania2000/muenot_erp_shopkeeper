@@ -376,7 +376,7 @@ export function NotificationSettings() {
           ))}
         </Card>
         <UnavailableNote>
-          These control what Muenot ERP records for your shop. Push notifications to this device are not enabled yet.
+          Device alerts also require Android notification permission.
         </UnavailableNote>
       </View>
     </Screen>

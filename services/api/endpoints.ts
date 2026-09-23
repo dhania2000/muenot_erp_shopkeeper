@@ -191,6 +191,26 @@ export const subscription = {
   get: (opts: Opts = {}) => request<SubscriptionResponse>('/subscription', opts),
 };
 
+/* --------------------------------------------------------- devices ----- */
+
+export interface DeviceRegistration {
+  deviceId: string;
+  pushToken: string;
+  pushProvider: 'fcm';
+  platform: 'android';
+  appVersion: string;
+  deviceName: string;
+}
+
+export const devices = {
+  register: (input: DeviceRegistration, opts: Opts = {}) =>
+    request<{ ok: true; deviceId: string }>('/devices', { method: 'POST', body: input, ...opts }),
+  update: (input: DeviceRegistration, opts: Opts = {}) =>
+    request<{ ok: true; deviceId: string }>('/devices', { method: 'PATCH', body: input, ...opts }),
+  revoke: (deviceId: string, opts: Opts = {}) =>
+    request<{ ok: true }>('/devices', { method: 'DELETE', body: { deviceId }, ...opts }),
+};
+
 /* ---------------------------------------------------- notifications ----- */
 
 export const notifications = {
@@ -217,5 +237,6 @@ export const api = {
   automations,
   team,
   subscription,
+  devices,
   notifications,
 };

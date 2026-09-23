@@ -14,6 +14,7 @@ import type {
   SubscriptionResponse,
   WhatsAppHealth,
 } from '@/types/api';
+import { notificationCenterDestination } from '../services/notification-routing.ts';
 import type {
   Automation,
   BusinessHoursDay,
@@ -344,6 +345,7 @@ export function toNotification(row: ApiNotification): NotificationItem {
     time: humanShortTime(row.created_at),
     type: NOTIFICATION_TYPE[moduleKey] ?? 'general',
     read: row.is_read === 1,
+    destination: notificationCenterDestination(row.link) ?? undefined,
   };
 }
 
