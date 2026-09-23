@@ -14,7 +14,7 @@ const config: ExpoConfig = {
     permissions: ['POST_NOTIFICATIONS'],
   },
   ios: { bundleIdentifier: 'com.muenot.shopkeeper', supportsTablet: true },
-  plugins: ['expo-router', 'expo-status-bar', 'expo-secure-store', ['expo-notifications', {
+  plugins: ['expo-router', 'expo-status-bar', 'expo-secure-store', 'expo-web-browser', ['expo-notifications', {
     defaultChannel: 'shopkeeper-messages', color: '#00583d',
   }], ['expo-splash-screen', {
     backgroundColor: '#00583d', image: './assets/images/logo-mark.png', imageWidth: 80,

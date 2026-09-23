@@ -14,6 +14,7 @@
 export interface ApiErrorBody {
   error: string;
   code?: string;
+  field?: string;
   /** Present on 422: field name to message. */
   fields?: Record<string, string>;
 }
@@ -188,6 +189,22 @@ export interface WhatsAppCaps {
 }
 
 export interface WhatsAppResponse { health: WhatsAppHealth; caps: WhatsAppCaps; role: 'admin' | 'employee' }
+
+export interface ShopkeeperRegistrationRequest {
+  businessName: string; businessCategory: string; ownerName: string; email: string; mobile: string;
+  country: string; state: string; city: string; postalCode: string; password: string;
+  termsAccepted: true; privacyAccepted: true;
+}
+export type RegistrationStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+export interface ShopkeeperRegistrationResponse { applicationId: number; status: 'PENDING_APPROVAL'; registrationToken: string }
+export interface RegistrationStatusResponse {
+  status: RegistrationStatus; businessName: string; ownerName: string; submittedAt: string; rejectionReason: string | null;
+}
+export interface WhatsAppConnectionStatus {
+  connected: boolean; status: 'NOT_CONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ACTION_REQUIRED';
+  displayName: string | null; phoneNumber: string | null; connectedAt: string | null;
+}
+export interface WhatsAppOnboardingSession { url: string; expiresAt: string }
 
 /* -------------------------------------------------- conversations ------- */
 

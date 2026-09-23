@@ -4,7 +4,7 @@ import { Link, router, type Href } from 'expo-router';
 import { colors } from '@/constants/theme';
 import { Header, Screen, SectionTitle } from './screen';
 import { Avatar } from './common';
-import { Badge, Card, EmptyState, Icon } from './ui';
+import { Badge, Button, Card, EmptyState, Icon } from './ui';
 import { ErrorState, Loading, UnavailableNote } from './states';
 import {
   useAutomations,
@@ -14,7 +14,9 @@ import {
   useSubscription,
   useTeam,
   useTemplates,
+  useWhatsAppConnection,
 } from '@/features/queries';
+import { useWhatsAppOnboarding } from '@/features/whatsapp-onboarding';
 import { humanDate } from '@/features/mappers';
 import { useSession } from '@/features/session';
 import type { Template } from '@/types/domain';
@@ -31,10 +33,24 @@ import type { Template } from '@/types/domain';
 
 const TEMPLATE_FILTERS = ['all', 'approved', 'pending', 'rejected'] as const;
 
+function DisconnectedWhatsApp({ title }: { title: string }) {
+  const onboarding = useWhatsAppOnboarding();
+  const canConnect = useSession((s) => s.user?.role === 'admin' && (s.user?.tenantRole === 'tenant_owner' || s.user?.tenantRole === 'tenant_admin'));
+  return <Screen><Header title={title} /><View style={{ padding: 24, gap: 12 }}>
+    <EmptyState icon="logo-whatsapp" title="WhatsApp not connected" description="Connect WhatsApp to use this feature with your customers." />
+    {canConnect ? <Button title="Connect WhatsApp" loading={onboarding.isConnecting} onPress={() => void onboarding.start()} />
+      : <Text style={{ color: colors.muted, textAlign: 'center' }}>Ask your shop owner or admin to connect WhatsApp.</Text>}
+    {!!onboarding.error && <Text accessibilityRole="alert" style={{ color: colors.danger }}>{onboarding.error}</Text>}
+  </View></Screen>;
+}
+
 export function Templates() {
   const { templates, isPending, isRefetching, error, refetch } = useTemplates();
+  const connection = useWhatsAppConnection();
   const [filter, setFilter] = useState<(typeof TEMPLATE_FILTERS)[number]>('all');
   const data = templates.filter((x) => filter === 'all' || x.status === filter);
+
+  if (!isPending && !error && templates.length === 0 && connection.data && !connection.data.connected) return <DisconnectedWhatsApp title="Templates" />;
 
   return (
     <Screen scroll={false}>
@@ -107,6 +123,9 @@ function TemplateRow({ template }: { template: Template }) {
 
 export function Campaigns() {
   const { campaigns, isPending, isRefetching, error, refetch } = useCampaigns();
+  const connection = useWhatsAppConnection();
+
+  if (!isPending && !error && campaigns.length === 0 && connection.data && !connection.data.connected) return <DisconnectedWhatsApp title="Campaigns" />;
 
   return (
     <Screen scroll={false}>
@@ -175,6 +194,9 @@ export function Campaigns() {
 
 export function Automations() {
   const { automations, isPending, isRefetching, error, refetch } = useAutomations();
+  const connection = useWhatsAppConnection();
+
+  if (!isPending && !error && automations.length === 0 && connection.data && !connection.data.connected) return <DisconnectedWhatsApp title="Automations" />;
 
   return (
     <Screen scroll={false}>

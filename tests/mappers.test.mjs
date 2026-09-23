@@ -374,6 +374,13 @@ test('the shop falls back to the tenant name when no profile exists', () => {
   assert.equal(shop.businessHours.every((d) => d.enabled === false), true);
 });
 
+test('disconnected WhatsApp never borrows the shop contact phone', () => {
+  const profile = { tenantId: 1, shopName: 'Sharma Store', phone: '7665748940' };
+  assert.equal(toShop(null, profile, { phoneNumber: null, status: 'not-connected' }).whatsappNumber, '');
+  assert.equal(toShop(null, profile, { phoneNumber: '7665748940', status: 'action-required' }).whatsappNumber, '');
+  assert.equal(toShop(null, profile, { phoneNumber: '+919876543210', status: 'connected' }).whatsappNumber, '+919876543210');
+});
+
 test('stored business hours are read back per day', () => {
   const shop = toShop(null, {
     tenantId: 1,

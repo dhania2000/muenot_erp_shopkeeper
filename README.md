@@ -140,3 +140,31 @@ tenant id, and the backend ignores one if it were sent.
 Navigation entries are hidden for modules the plan does not include, read from
 `shopkeeper.*` flags on `GET /subscription`. This is UX only — the backend
 authorises every request and answers 403 regardless of what is on screen.
+
+### Self-registration and WhatsApp onboarding
+
+The self-registration flow follows the ERP's
+[Shopkeeper handoff](https://github.com/dhania2000/muenot_erp/blob/main/docs/shopkeeper-self-registration.md).
+`POST /auth/register` submits business/owner details and consent. It returns a
+one-time registration receipt, not a login session. The app keeps that receipt
+in SecureStore and calls `GET /auth/registration-status` with
+`Authorization: Registration <receipt>` at launch and on manual refresh.
+Pending, rejected and suspended applicants cannot open business screens.
+Approval leads to the existing email/password login; only that login creates
+the mobile bearer/refresh session. Logging out clears both session and receipt.
+
+For an approved Shopkeeper owner/admin, `POST /whatsapp/onboarding-session`
+returns a short-lived Muenot-hosted HTTPS link. The app opens it through
+`expo-web-browser`; Meta code exchange and credentials remain on the ERP.
+The `muenot://whatsapp/connected` and `/error` callbacks contain no code or
+token. The app verifies either return against `GET /whatsapp/status` before
+showing Connected and refreshes the dashboard and Inbox. The dashboard never
+uses the shop's contact phone as a WhatsApp number. Inbox, Templates,
+Campaigns and Automations show a connection action when disconnected and empty.
+
+Before release, configure the **published** legal URLs as
+`EXPO_PUBLIC_TERMS_URL` and `EXPO_PUBLIC_PRIVACY_URL`. These are public URLs in
+the APK, not secrets. The in-app registration form does not invent legal URLs.
+Complete production ERP deployment, migrations, Meta configuration and real
+Android device testing of registration, approval, browser return and FCM.
+The EAS `production` Android profile builds an APK for direct distribution.

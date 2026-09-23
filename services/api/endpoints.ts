@@ -23,6 +23,11 @@ import type {
   TeamResponse,
   TemplatesResponse,
   TenantResponse,
+  ShopkeeperRegistrationRequest,
+  ShopkeeperRegistrationResponse,
+  RegistrationStatusResponse,
+  WhatsAppConnectionStatus,
+  WhatsAppOnboardingSession,
   ApiContact,
   ApiOrder,
   ApiProduct,
@@ -41,6 +46,12 @@ type Opts = { signal?: AbortSignal };
 /* ------------------------------------------------------------- auth ----- */
 
 export const auth = {
+  register: (input: ShopkeeperRegistrationRequest) =>
+    request<ShopkeeperRegistrationResponse>('/auth/register', { method: 'POST', body: input, auth: false }),
+  registrationStatus: (token: string) =>
+    request<RegistrationStatusResponse>('/auth/registration-status', {
+      auth: false, headers: { Authorization: `Registration ${token}` }, retries: 0,
+    }),
   login: (input: { email: string; password: string; deviceName?: string; platform?: string }, opts: Opts = {}) =>
     request<LoginResponse>('/auth/login', { method: 'POST', body: input, auth: false, ...opts }),
 
@@ -72,6 +83,8 @@ export const dashboard = {
 
 export const whatsapp = {
   get: (opts: Opts = {}) => request<import('@/types/api').WhatsAppResponse>('/whatsapp', opts),
+  status: (opts: Opts = {}) => request<WhatsAppConnectionStatus>('/whatsapp/status', opts),
+  onboardingSession: () => request<WhatsAppOnboardingSession>('/whatsapp/onboarding-session', { method: 'POST', body: {} }),
 };
 
 /* ---------------------------------------------------- conversations ----- */

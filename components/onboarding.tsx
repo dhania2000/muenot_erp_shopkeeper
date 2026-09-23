@@ -5,9 +5,9 @@ import { colors } from '@/constants/theme';
 import { Badge, Button, Icon, Input } from './ui';
 import { Header, Screen } from './screen';
 import { ErrorState, Loading, UnavailableNote } from './states';
-import { useShop, useUpdateShopProfile, useWhatsApp } from '@/features/queries';
-import { useIsTenantAdmin } from '@/features/session';
-import { WHATSAPP_STATUS_LABEL, whatsAppTone } from '@/features/mappers';
+import { useShop, useUpdateShopProfile, useWhatsAppConnection } from '@/features/queries';
+import { useWhatsAppOnboarding } from '@/features/whatsapp-onboarding';
+import { useIsTenantAdmin, useSession } from '@/features/session';
 import { errorMessage, isApiError } from '@/services/api/errors';
 
 /**
@@ -142,14 +142,11 @@ function OnboardingStep({ step, shop }: { step: 0 | 1 | 2 | 3; shop: ReturnType<
   );
 }
 
-/**
- * Read-only: connecting a number requires the Meta credentials that live in
- * Muenot ERP, so this reports the real status rather than offering a button
- * that would only pretend to connect.
- */
 function WhatsAppStep() {
-  const { status, health, isPending } = useWhatsApp();
-  const ready = status === 'messaging-ready' || status === 'connected';
+  const connection = useWhatsAppConnection();
+  const onboarding = useWhatsAppOnboarding();
+  const canConnect = useSession((s) => s.user?.role === 'admin' && (s.user?.tenantRole === 'tenant_owner' || s.user?.tenantRole === 'tenant_admin'));
+  const ready = connection.data?.connected === true && connection.data.status === 'CONNECTED';
 
   return (
     <View style={s.wa}>
@@ -158,16 +155,17 @@ function WhatsAppStep() {
       </View>
       <Text style={s.waTitle}>Connect your WhatsApp</Text>
       <Text style={s.desc}>
-        Your business WhatsApp number is connected in Muenot ERP. Once it is linked, customer messages arrive in your
-        inbox here.
+        Connect through Muenot to receive and reply to customer messages in your inbox.
       </Text>
       <View style={s.connection}>
         <View style={{ flex: 1 }}>
           <Text style={s.waTitle}>WhatsApp Business</Text>
-          <Text style={s.desc}>{health?.phone?.displayPhoneNumber ?? (isPending ? 'Checking…' : 'No number connected')}</Text>
+          <Text style={s.desc}>{ready ? connection.data?.phoneNumber || 'Connected' : connection.isPending ? 'Checking…' : 'No number connected'}</Text>
         </View>
-        <Badge tone={whatsAppTone(status)}>{WHATSAPP_STATUS_LABEL[status]}</Badge>
+        <Badge tone={ready ? 'success' : 'warning'}>{ready ? 'Connected' : 'Not connected'}</Badge>
       </View>
+      {!ready && canConnect && <Button title="Connect WhatsApp" loading={onboarding.isConnecting} onPress={() => void onboarding.start()} />}
+      {!!onboarding.error && <Text style={s.hint}>{onboarding.error}</Text>}
       <Button title={ready ? 'Go to Dashboard' : 'Continue to Dashboard'} onPress={() => router.replace('/home')} />
     </View>
   );

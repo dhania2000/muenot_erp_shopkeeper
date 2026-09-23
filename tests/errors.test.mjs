@@ -45,6 +45,12 @@ test('422 field errors survive onto the error object', () => {
   assert.deepEqual(error.fields, { phone: 'Already in use.' });
 });
 
+test('Shopkeeper registration field errors use the backend singular field key', () => {
+  const error = apiErrorFromResponse(400, { error: 'Valid email is required.', field: 'email' }, null);
+  assert.equal(error.kind, 'validation');
+  assert.equal(error.field, 'email');
+});
+
 test('Retry-After is parsed, and ignored when not a positive number', () => {
   assert.equal(apiErrorFromResponse(429, { error: 'Too many' }, '30').retryAfterSeconds, 30);
   assert.equal(apiErrorFromResponse(429, { error: 'Too many' }, 'soon').retryAfterSeconds, undefined);

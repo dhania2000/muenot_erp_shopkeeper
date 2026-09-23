@@ -3,6 +3,7 @@ import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSession } from '@/features/session';
 import { colors } from '@/constants/theme';
+import { launchDestination } from '@/features/account-routing';
 
 /**
  * Launch route. Waits for the session restore started in the root layout, then
@@ -11,11 +12,12 @@ import { colors } from '@/constants/theme';
 export default function Splash() {
   const isInitializing = useSession((s) => s.isInitializing);
   const isAuthenticated = useSession((s) => s.isAuthenticated);
+  const registrationStatus = useSession((s) => s.registrationStatus);
 
   useEffect(() => {
     if (isInitializing) return;
-    router.replace(isAuthenticated ? '/home' : '/welcome');
-  }, [isInitializing, isAuthenticated]);
+    router.replace(launchDestination(isAuthenticated, registrationStatus?.status ?? null));
+  }, [isInitializing, isAuthenticated, registrationStatus]);
 
   return (
     <View style={s.root}>

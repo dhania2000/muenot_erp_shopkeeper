@@ -4,7 +4,9 @@ import { api } from '@/services/api/endpoints';
 import { adoptTokens, clearSession, forceRefresh, loadSession, onSessionExpired, peekSession } from '@/services/api/client';
 import { ApiError, isApiError } from '@/services/api/errors';
 import { clearLocalNotificationState, resetAfterLogout, revokeCurrentDevice } from '@/services/notifications';
+import { clearRegistrationReceipt, loadRegistrationReceipt, saveRegistrationReceipt } from '@/services/api/session-store';
 import type { ApiTenant, ApiUser, FeatureResolution } from '@/types/api';
+import type { RegistrationStatusResponse, ShopkeeperRegistrationRequest } from '@/types/api';
 
 /**
  * The one source of session truth. Nothing else reads tokens, and no screen
@@ -48,8 +50,15 @@ export interface SessionState {
   /** Set when a login attempt fails, cleared on the next attempt. */
   loginError: ApiError | null;
   isLoggingIn: boolean;
+  registrationStatus: RegistrationStatusResponse | null;
+  registrationError: ApiError | null;
+  isCheckingRegistration: boolean;
+  isRegistering: boolean;
 
   initialize: () => Promise<void>;
+  register: (input: ShopkeeperRegistrationRequest) => Promise<boolean>;
+  refreshRegistrationStatus: () => Promise<void>;
+  clearRegistration: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
@@ -72,6 +81,60 @@ export const useSession = create<SessionState>()((set, get) => ({
   isInitializing: true,
   loginError: null,
   isLoggingIn: false,
+  registrationStatus: null,
+  registrationError: null,
+  isCheckingRegistration: false,
+  isRegistering: false,
+
+  register: async (input) => {
+    if (get().isRegistering) return false;
+    set({ isRegistering: true, registrationError: null });
+    try {
+      const result = await api.auth.register(input);
+      const initialStatus: RegistrationStatusResponse = { status: result.status, businessName: input.businessName,
+        ownerName: input.ownerName, submittedAt: new Date().toISOString(), rejectionReason: null };
+      await saveRegistrationReceipt({ token: result.registrationToken, email: input.email, lastStatus: initialStatus });
+      // The 201 response itself is server-authoritative pending state. Fetch
+      // customer-facing details separately; a network hiccup must not lose it.
+      set({ registrationStatus: initialStatus });
+      await get().refreshRegistrationStatus();
+      return true;
+    } catch (error) {
+      set({ registrationError: isApiError(error)
+        ? error.kind === 'offline' ? new ApiError({ kind: 'offline', status: 0, message: 'Internet connection required to create your account.' }) : error
+        : new ApiError({ kind: 'unknown', status: 0, message: 'Could not create account.' }) });
+      return false;
+    } finally { set({ isRegistering: false }); }
+  },
+
+  refreshRegistrationStatus: async () => {
+    if (get().isCheckingRegistration) return;
+    const receipt = await loadRegistrationReceipt();
+    if (!receipt) return;
+    set({ isCheckingRegistration: true, registrationError: null });
+    try {
+      const status = await api.auth.registrationStatus(receipt.token);
+      await saveRegistrationReceipt({ ...receipt, lastStatus: status });
+      set({ registrationStatus: status });
+      const storedSession = status.status === 'APPROVED' ? null : (peekSession() ?? await loadSession());
+      if (storedSession) {
+        await clearSession();
+        await clearLocalNotificationState();
+        set({ isAuthenticated: false, user: null, tenant: null, entitlements: [], featureFlags: null });
+      }
+    } catch (error) {
+      if (isApiError(error) && (error.kind === 'unauthorized' || error.kind === 'notFound')) {
+        await clearRegistrationReceipt();
+        set({ registrationStatus: null });
+      }
+      set({ registrationError: isApiError(error) ? error : new ApiError({ kind: 'unknown', status: 0, message: 'Could not refresh account status.' }) });
+    } finally { set({ isCheckingRegistration: false }); }
+  },
+
+  clearRegistration: async () => {
+    await clearRegistrationReceipt();
+    set({ registrationStatus: null, registrationError: null });
+  },
 
   /**
    * Launch path: restore the stored session, validate it against /me
@@ -82,6 +145,16 @@ export const useSession = create<SessionState>()((set, get) => ({
   initialize: async () => {
     set({ isInitializing: true });
     try {
+      const receipt = await loadRegistrationReceipt();
+      if (receipt) {
+        set({ registrationStatus: receipt.lastStatus });
+        await get().refreshRegistrationStatus();
+        const status = get().registrationStatus?.status;
+        if (status && status !== 'APPROVED') return;
+        // Do not expose a protected screen if a receipt exists but the
+        // authoritative status could not be checked (for example, offline).
+        if (!status && get().registrationError) return;
+      }
       const stored = await loadSession();
       if (!stored) {
         set({ isAuthenticated: false, isInitializing: false });
@@ -94,8 +167,8 @@ export const useSession = create<SessionState>()((set, get) => ({
         await clearLocalNotificationState();
         set({ user: null, tenant: null, entitlements: [], featureFlags: null, isAuthenticated: false });
       }
-      // A network failure at launch must not wipe a valid session; the user
-      // stays signed in and individual screens show their own offline state.
+      // A network failure does not erase saved credentials. Keep business
+      // screens closed until the server can validate this session again.
     } finally {
       set({ isInitializing: false });
     }
@@ -111,6 +184,26 @@ export const useSession = create<SessionState>()((set, get) => ({
         platform: Platform.OS,
       });
       await adoptTokens(result);
+      const receipt = await loadRegistrationReceipt();
+      if (receipt) {
+        // An approved owner's receipt remains available for future suspension
+        // checks. A different account must never inherit that applicant state.
+        if (receipt.email && receipt.email !== email.trim().toLowerCase()) await get().clearRegistration();
+        else {
+          try {
+            const status = await api.auth.registrationStatus(receipt.token);
+            await saveRegistrationReceipt({ ...receipt, lastStatus: status });
+            set({ registrationStatus: status });
+            if (status.status !== 'APPROVED') {
+              await clearSession();
+              set({ loginError: null, isAuthenticated: false });
+              return false;
+            }
+          } catch (error) {
+            if (isApiError(error) && (error.kind === 'unauthorized' || error.kind === 'notFound')) await get().clearRegistration();
+          }
+        }
+      }
       // /me validates the new bearer session before the notification
       // coordinator treats this account as authenticated.
       await get().reloadIdentity();
@@ -119,7 +212,9 @@ export const useSession = create<SessionState>()((set, get) => ({
       const apiError = isApiError(error)
         ? error
         : new ApiError({ kind: 'unknown', status: 0, message: 'Login failed. Try again.' });
-      set({ loginError: apiError, isAuthenticated: false });
+      if (peekSession()) await clearSession();
+      set({ loginError: apiError, isAuthenticated: false, user: null, tenant: null, entitlements: [], featureFlags: null });
+      if (get().registrationStatus) await get().refreshRegistrationStatus();
       return false;
     } finally {
       set({ isLoggingIn: false });
@@ -136,6 +231,7 @@ export const useSession = create<SessionState>()((set, get) => ({
       /* offline or already revoked */
     }
     await clearSession();
+    await get().clearRegistration();
     resetAfterLogout();
     set({
       user: null,

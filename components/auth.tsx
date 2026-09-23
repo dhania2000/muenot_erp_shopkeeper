@@ -5,6 +5,7 @@ import { colors } from '@/constants/theme';
 import { Button, Input, Icon } from './ui';
 import { Header, Screen } from './screen';
 import { useSession } from '@/features/session';
+export { RegistrationScreen as Signup } from './registration';
 
 export function Welcome() {
   const points = [
@@ -56,6 +57,7 @@ export function Login() {
   const login = useSession((state) => state.login);
   const isLoggingIn = useSession((state) => state.isLoggingIn);
   const loginError = useSession((state) => state.loginError);
+  const registrationStatus = useSession((state) => state.registrationStatus);
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const valid = /\S+@\S+\.\S+/.test(email.trim()) && pw.length > 0;
@@ -63,6 +65,7 @@ export function Login() {
   const submit = async () => {
     if (!valid || isLoggingIn) return;
     if (await login(email, pw)) router.replace('/home');
+    else if (registrationStatus && registrationStatus.status !== 'APPROVED') router.replace('/registration/status');
   };
 
   // A 422 names the offending field; anything else is a banner above the form.
@@ -113,32 +116,6 @@ export function Login() {
               Create Account
             </Text>
           </Text>
-        </View>
-      </View>
-    </Screen>
-  );
-}
-
-/**
- * The mobile API exposes no registration endpoint — shops are provisioned in
- * the Muenot ERP, not from the handset. Rather than collect details the app
- * cannot submit, this explains where an account comes from.
- */
-export function Signup() {
-  return (
-    <Screen>
-      <Header title="Create Account" />
-      <View style={s.notice}>
-        <View style={s.round}>
-          <Icon name="storefront-outline" size={30} />
-        </View>
-        <Text style={s.heroSmall}>Accounts are set up by Muenot</Text>
-        <Text style={s.desc}>
-          Your shop is created in Muenot ERP along with your login. Contact the Muenot team to have your shop added,
-          then sign in here with the email address they set up for you.
-        </Text>
-        <View style={s.noticeButtons}>
-          <Button title="Login" onPress={() => router.replace('/login')} />
         </View>
       </View>
     </Screen>

@@ -31,6 +31,8 @@ export interface RequestOptions {
   signal?: AbortSignal;
   /** Set false for the unauthenticated auth endpoints. */
   auth?: boolean;
+  /** For the public registration-status endpoint's scoped receipt. */
+  headers?: Record<string, string>;
   timeoutMs?: number;
   /** Extra attempts after the first for retryable failures. GET defaults to 2. */
   retries?: number;
@@ -160,9 +162,9 @@ async function send(url: string, init: RequestInit, timeoutMs: number, external?
       try {
         body = JSON.parse(text);
       } catch {
-        // A non-JSON body means we hit something other than the API (an HTML
-        // 404 from the host, a captive portal). Keep the text for the message.
-        body = { error: response.ok ? 'Unexpected response from the server.' : text.slice(0, 200) };
+        // A proxy or captive portal can return HTML, including internal details.
+        // Never surface that raw body in customer-facing auth or onboarding UI.
+        body = { error: 'Unexpected response from the server. Please try again.' };
       }
     }
     return { status: response.status, body, retryAfter: response.headers.get('Retry-After') };
@@ -205,7 +207,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   let attempt = 0;
 
   while (attempt < maxAttempts) {
-    const headers: Record<string, string> = { Accept: 'application/json' };
+    const headers: Record<string, string> = { Accept: 'application/json', ...options.headers };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (auth) {
       const active = peekSession();

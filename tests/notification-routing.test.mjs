@@ -24,6 +24,9 @@ test('only implemented destinations are selected for other event types', () => {
   assert.equal(notificationDestination({ type: 'new_order' }), '/orders');
   assert.equal(notificationDestination({ type: 'campaign_status' }), '/more/campaigns');
   assert.equal(notificationDestination({ type: 'subscription_warning' }), '/more/subscription');
+  for (const type of ['SHOPKEEPER_APPROVED', 'SHOPKEEPER_REJECTED', 'SHOPKEEPER_SUSPENDED']) {
+    assert.equal(notificationDestination({ type }), '/registration/status');
+  }
 });
 
 test('backend notification-center links permit only a numeric WhatsApp conversation', () => {

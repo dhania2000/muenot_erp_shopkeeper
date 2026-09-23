@@ -2,13 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Stack, router, usePathname, useRootNavigationState, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { AppState } from 'react-native';
+import { AppState, StyleSheet, View } from 'react-native';
+import * as Linking from 'expo-linking';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
 import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { createQueryClient } from '@/features/queries';
+import { canOpenBusiness } from '@/features/account-routing';
 import { bindSessionExpiry, useSession } from '@/features/session';
 import { notificationDestination } from '@/services/notification-routing';
+import { callbackOutcome } from '@/services/whatsapp-onboarding';
 import { invalidateForPush, registerCurrentDevice, subscribeToPush, subscribeToTokenChanges } from '@/services/notifications';
 
 SplashScreen.preventAutoHideAsync();
@@ -22,6 +25,10 @@ function SessionGate() {
   const initialize = useSession((s) => s.initialize);
   const isAuthenticated = useSession((s) => s.isAuthenticated);
   const isInitializing = useSession((s) => s.isInitializing);
+  const registrationStatus = useSession((s) => s.registrationStatus);
+  const refreshRegistrationStatus = useSession((s) => s.refreshRegistrationStatus);
+  const pathname = usePathname();
+  const navigation = useRootNavigationState();
   const wasAuthenticated = useRef(false);
 
   useEffect(() => {
@@ -40,15 +47,44 @@ function SessionGate() {
     if (wasAuthenticated.current) {
       wasAuthenticated.current = false;
       queryClient.clear();
-      router.replace('/login');
+      router.replace(registrationStatus && registrationStatus.status !== 'APPROVED' ? '/registration/status' : '/login');
     }
-  }, [isAuthenticated, isInitializing, queryClient]);
+  }, [isAuthenticated, isInitializing, registrationStatus, queryClient]);
 
-  return null;
+  useEffect(() => {
+    if (isInitializing || !navigation?.key || pathname === '/') return;
+    const publicPath = pathname === '/welcome' || pathname === '/login' || pathname === '/signup'
+      || pathname === '/registration/status' || pathname === '/login/forgot-password';
+    if (!isAuthenticated && !publicPath) router.replace(registrationStatus ? '/registration/status' : '/login');
+    else if (registrationStatus && registrationStatus.status !== 'APPROVED' && pathname !== '/registration/status') router.replace('/registration/status');
+  }, [isAuthenticated, isInitializing, registrationStatus, navigation?.key, pathname]);
+
+  useEffect(() => {
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && registrationStatus) void refreshRegistrationStatus();
+    });
+    return () => appState.remove();
+  }, [registrationStatus, refreshRegistrationStatus]);
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      const outcome = callbackOutcome(url);
+      if (outcome) router.replace(`/whatsapp/return?result=${outcome}`);
+    });
+    return () => subscription.remove();
+  }, []);
+
+  const publicPath = pathname === '/' || pathname === '/welcome' || pathname === '/login' || pathname === '/signup'
+    || pathname === '/registration/status' || pathname === '/login/forgot-password';
+  const blocked = isInitializing || (!publicPath && !canOpenBusiness(isAuthenticated, registrationStatus?.status ?? null));
+  return blocked ? <View pointerEvents="auto" style={gateStyles.blocker} /> : null;
 }
+
+const gateStyles = StyleSheet.create({ blocker: { ...StyleSheet.absoluteFill, zIndex: 100, backgroundColor: '#00583d' } });
 
 function NotificationCoordinator() {
   const queryClient = useQueryClient();
+  const refreshRegistrationStatus = useSession((s) => s.refreshRegistrationStatus);
   const isAuthenticated = useSession((s) => s.isAuthenticated);
   const isInitializing = useSession((s) => s.isInitializing);
   const navigation = useRootNavigationState();
@@ -60,8 +96,11 @@ function NotificationCoordinator() {
   useEffect(() => subscribeToPush(queryClient, (data, id) => {
     if (lastHandledId.current === id) return;
     lastHandledId.current = id;
+    if (data.type === 'SHOPKEEPER_APPROVED' || data.type === 'SHOPKEEPER_REJECTED' || data.type === 'SHOPKEEPER_SUSPENDED') {
+      void refreshRegistrationStatus();
+    }
     setPending({ id, route: notificationDestination(data) });
-  }), [queryClient]);
+  }), [queryClient, refreshRegistrationStatus]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -113,9 +152,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
         <SessionGate />
         <NotificationCoordinator />
-        <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

@@ -1,15 +1,16 @@
 import { useCallback } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SectionTitle } from '@/components/screen';
 import { Avatar, Metric } from '@/components/common';
 import { Badge, Icon } from '@/components/ui';
 import { ErrorState, Loading } from '@/components/states';
 import { colors } from '@/constants/theme';
-import { useDashboard, useNotifications, useShop } from '@/features/queries';
+import { useDashboard, useNotifications, useShop, useWhatsAppConnection } from '@/features/queries';
+import { useWhatsAppOnboarding } from '@/features/whatsapp-onboarding';
 import { isEntitled, useSession } from '@/features/session';
-import { WHATSAPP_STATUS_LABEL, dashboardWhatsAppStatus, humanDate, humanShortTime, whatsAppTone } from '@/features/mappers';
+import { humanDate, humanShortTime } from '@/features/mappers';
 import { ApiError } from '@/services/api/errors';
 import type { DashboardConversation, DashboardOrder } from '@/types/api';
 
@@ -29,7 +30,11 @@ export default function Home() {
   const dashboard = useDashboard();
   const { shop } = useShop();
   const notifications = useNotifications();
+  const canSeeWhatsApp = useSession((s) => isEntitled(s, 'whatsapp'));
+  const connection = useWhatsAppConnection({ enabled: canSeeWhatsApp });
+  const onboarding = useWhatsAppOnboarding();
   const user = useSession((s) => s.user);
+  const canConnect = user?.role === 'admin' && (user.tenantRole === 'tenant_owner' || user.tenantRole === 'tenant_admin');
   const canSeeOrders = useSession((s) => isEntitled(s, 'orders'));
   const canSeeInbox = useSession((s) => isEntitled(s, 'inbox'));
   const canSeeProducts = useSession((s) => isEntitled(s, 'products'));
@@ -38,13 +43,16 @@ export default function Home() {
   const refresh = useCallback(() => {
     dashboard.refetch();
     notifications.refetch();
-  }, [dashboard, notifications]);
+    if (canSeeWhatsApp) connection.refetch();
+  }, [dashboard, notifications, connection, canSeeWhatsApp]);
 
   const metrics = dashboard.metrics;
   const firstName = (shop.owner || user?.name || '').split(' ')[0];
-  // The dashboard's own WhatsApp block is the cheapest signal; the richer
-  // /whatsapp health drives the Settings screen and is the fallback here.
-  const waStatus = dashboardWhatsAppStatus(dashboard.whatsapp, shop.whatsappStatus);
+  const wa = connection.data;
+  const connected = wa?.connected === true && wa.status === 'CONNECTED';
+  const waLabel = onboarding.isConnecting ? 'Connecting…' : connection.isPending ? 'Checking…' : connection.isError ? 'Connection failed'
+    : connected ? 'Connected ✓' : wa?.status === 'CONNECTING' ? 'Connecting…'
+    : wa?.status === 'ACTION_REQUIRED' ? 'Action required' : 'Not connected';
 
   const quickActions = [
     canSeeInbox && ['/inbox', 'Open Inbox', 'chatbubble-outline'],
@@ -82,18 +90,18 @@ export default function Home() {
           <Text style={s.muted}>Here's what's happening in your shop today.</Text>
         </View>
 
-        <Link href="/more/settings/whatsapp" asChild>
-          <Pressable style={s.wa}>
+        {canSeeWhatsApp && <Pressable style={s.wa} accessibilityRole="button" accessibilityLabel={`WhatsApp Business, ${waLabel}`} disabled={onboarding.isConnecting} onPress={() => connection.isError ? void connection.refetch() : connected ? router.push('/more/settings/whatsapp') : canConnect ? void onboarding.start() : router.push('/more/settings/whatsapp')}>
             <View style={s.waIcon}>
               <Icon name="logo-whatsapp" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={s.shopName}>WhatsApp Business</Text>
-              <Text style={s.muted}>{dashboard.whatsapp?.phoneNumber || shop.whatsappNumber || 'No number connected'}</Text>
+              <Text style={s.muted}>{connected ? (wa.phoneNumber || wa.displayName || 'Connected') : connection.isError ? 'Pull down to retry' : 'Connect your WhatsApp Business account to start messaging customers.'}</Text>
+              {!connected && canConnect && !connection.isPending && <Text style={s.waCta}>{connection.isError ? 'Try Again' : onboarding.isConnecting ? 'Connecting…' : wa?.status === 'ACTION_REQUIRED' ? 'Reconnect' : 'Connect WhatsApp'}</Text>}
             </View>
-            <Badge tone={whatsAppTone(waStatus)}>{WHATSAPP_STATUS_LABEL[waStatus]}</Badge>
-          </Pressable>
-        </Link>
+            <Badge tone={connected ? 'success' : connection.isError ? 'danger' : wa?.status === 'CONNECTING' ? 'info' : 'warning'}>{waLabel}</Badge>
+          </Pressable>}
+        {canSeeWhatsApp && !!onboarding.error && <Text accessibilityRole="alert" style={s.waError}>{onboarding.error}</Text>}
 
         {dashboard.isPending ? (
           <Loading label="Loading your shop…" />
@@ -244,6 +252,8 @@ const s = StyleSheet.create({
   h1: { fontSize: 21, fontWeight: '800', color: colors.text },
   wa: { marginHorizontal: 16, padding: 14, borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.card, flexDirection: 'row', alignItems: 'center', gap: 10 },
   waIcon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primarySoft },
+  waCta: { color: colors.primary, fontSize: 12, fontWeight: '800', marginTop: 6 },
+  waError: { color: colors.danger, fontSize: 12, marginHorizontal: 18, marginTop: 6 },
   metrics: { padding: 16, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 10 },
   block: { paddingHorizontal: 16, paddingBottom: 22 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

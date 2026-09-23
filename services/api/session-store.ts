@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { appConfig } from '@/constants/config';
 import type { AuthTokens } from '@/types/api';
+import type { RegistrationStatusResponse } from '@/types/api';
 
 /**
  * Persistence for the mobile session.
@@ -59,6 +60,25 @@ const ACCESS_KEY = 'muenot.session.access';
 const REFRESH_KEY = 'muenot.session.refresh';
 /** Non-sensitive session metadata, kept beside the tokens for simplicity. */
 const META_KEY = 'muenot.session.meta';
+const REGISTRATION_KEY = 'muenot.registration.receipt';
+
+export interface StoredRegistrationReceipt { token: string; email: string; lastStatus: RegistrationStatusResponse | null }
+export async function loadRegistrationReceipt(): Promise<StoredRegistrationReceipt | null> {
+  try {
+    const raw = await storage.getItem(REGISTRATION_KEY);
+    if (!raw) return null;
+    const value: unknown = JSON.parse(raw);
+    if (!value || typeof value !== 'object') return null;
+    const receipt = value as StoredRegistrationReceipt;
+    return /^[A-Za-z0-9_-]{40,64}$/.test(receipt.token) ? receipt : null;
+  } catch { return null; }
+}
+export async function saveRegistrationReceipt(receipt: StoredRegistrationReceipt): Promise<void> {
+  await storage.setItem(REGISTRATION_KEY, JSON.stringify(receipt));
+}
+export async function clearRegistrationReceipt(): Promise<void> {
+  await storage.deleteItem(REGISTRATION_KEY).catch(() => {});
+}
 
 export interface StoredSession {
   accessToken: string;

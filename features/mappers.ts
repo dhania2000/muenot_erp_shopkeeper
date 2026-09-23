@@ -448,7 +448,7 @@ export function toShop(
     website: profile?.website ?? undefined,
     businessHours: toBusinessHours(profile?.businessHours),
     notificationPreferences: toNotificationPreferences(profile?.notificationPreferences),
-    whatsappNumber: whatsapp?.phoneNumber ?? profile?.phone ?? '',
+    whatsappNumber: whatsapp?.status === 'connected' || whatsapp?.status === 'messaging-ready' ? whatsapp.phoneNumber ?? '' : '',
     whatsappStatus: whatsapp?.status ?? 'not-connected',
   };
 }

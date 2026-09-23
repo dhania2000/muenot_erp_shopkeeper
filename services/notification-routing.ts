@@ -16,6 +16,10 @@ export function conversationIdFromNotification(value: unknown): string | null {
 export function notificationDestination(value: unknown): string {
   const data = safeNotificationData(value);
   switch (data.type) {
+    case 'SHOPKEEPER_APPROVED':
+    case 'SHOPKEEPER_REJECTED':
+    case 'SHOPKEEPER_SUSPENDED':
+      return '/registration/status';
     case 'whatsapp_message':
     case 'conversation_assigned': {
       const id = conversationIdFromNotification(data);

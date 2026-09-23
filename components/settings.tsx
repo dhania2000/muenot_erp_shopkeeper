@@ -6,9 +6,10 @@ import { Header, Screen, SectionTitle } from './screen';
 import { Avatar, MenuItem } from './common';
 import { Badge, Button, Card, Icon, Input } from './ui';
 import { ErrorState, Loading, UnavailableNote } from './states';
-import { useShop, useUpdateShopProfile, useWhatsApp } from '@/features/queries';
+import { useShop, useUpdateShopProfile, useWhatsApp, useWhatsAppConnection } from '@/features/queries';
+import { useWhatsAppOnboarding } from '@/features/whatsapp-onboarding';
 import { isEntitled, useIsTenantAdmin, useSession } from '@/features/session';
-import { WHATSAPP_STATUS_LABEL, businessHoursToApi, whatsAppTone } from '@/features/mappers';
+import { businessHoursToApi } from '@/features/mappers';
 import { errorMessage, isApiError } from '@/services/api/errors';
 import type { BusinessHoursDay } from '@/types/domain';
 
@@ -257,11 +258,14 @@ export function BusinessHours() {
  */
 export function WhatsAppSettings() {
   const { status, health, caps, isPending, isError, error, refetch } = useWhatsApp();
+  const connection = useWhatsAppConnection();
+  const onboarding = useWhatsAppOnboarding();
+  const canConnect = useSession((s) => s.user?.role === 'admin' && (s.user?.tenantRole === 'tenant_owner' || s.user?.tenantRole === 'tenant_admin'));
 
   if (isPending) return <Shell title="WhatsApp"><Loading label="Checking connection…" /></Shell>;
   if (isError) return <Shell title="WhatsApp"><ErrorState error={error} onRetry={refetch} /></Shell>;
 
-  const ready = status === 'messaging-ready' || status === 'connected';
+  const ready = connection.data?.connected === true && connection.data.status === 'CONNECTED';
 
   return (
     <Screen>
@@ -270,17 +274,17 @@ export function WhatsAppSettings() {
         <View style={s.waIcon}>
           <Icon name={ready ? 'checkmark-circle' : 'logo-whatsapp'} size={35} color={ready ? colors.success : colors.primary} />
         </View>
-        <Badge tone={whatsAppTone(status)}>{WHATSAPP_STATUS_LABEL[status]}</Badge>
+        <Badge tone={ready ? 'success' : 'warning'}>{ready ? 'Connected' : connection.data?.status === 'ACTION_REQUIRED' ? 'Action required' : connection.data?.status === 'CONNECTING' ? 'Connecting' : 'Not connected'}</Badge>
         <Text style={s.centerText}>
           {ready
             ? 'Your WhatsApp Business number is connected and ready to send and receive messages.'
-            : 'Your WhatsApp Business connection needs attention. Connections are set up in Muenot ERP.'}
+            : 'Connect your WhatsApp Business account to start messaging customers.'}
         </Text>
       </View>
       <View style={s.pad}>
         <Card style={s.gap}>
-          <Row label="Business Name" value={health?.phone?.verifiedName ?? '—'} />
-          <Row label="Phone Number" value={health?.phone?.displayPhoneNumber ?? 'Not connected'} />
+          <Row label="Business Name" value={ready ? connection.data?.displayName ?? '—' : '—'} />
+          <Row label="Phone Number" value={ready ? connection.data?.phoneNumber ?? '—' : 'Not connected'} />
           <Row label="Quality Rating" value={health?.phone?.qualityRating ?? '—'} />
           <Row label="Templates Approved" value={health ? `${health.templates.approved} of ${health.templates.total}` : '—'} />
           <Row label="Messages in last 24h" value={String(health?.webhook.eventsLast24h ?? 0)} />
@@ -316,10 +320,9 @@ export function WhatsAppSettings() {
 
         {caps && !caps.canSend && <UnavailableNote>Your account cannot send WhatsApp messages. Ask an admin to grant the permission.</UnavailableNote>}
 
-        <UnavailableNote>
-          Connecting or disconnecting a WhatsApp Business number is done in Muenot ERP, which holds the Meta
-          credentials. The app never handles them.
-        </UnavailableNote>
+        {!ready && canConnect && <Button title={connection.data?.status === 'ACTION_REQUIRED' ? 'Reconnect WhatsApp' : 'Connect WhatsApp'} loading={onboarding.isConnecting} onPress={() => void onboarding.start()} />}
+        {!ready && !canConnect && <UnavailableNote>Ask your shop owner or admin to connect WhatsApp.</UnavailableNote>}
+        {!!onboarding.error && <Text accessibilityRole="alert" style={s.error}>{onboarding.error}</Text>}
       </View>
     </Screen>
   );

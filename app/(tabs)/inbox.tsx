@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { colors } from '@/constants/theme';
 import { ConversationCard } from '@/components/common';
-import { EmptyState, Icon, Input } from '@/components/ui';
+import { Button, EmptyState, Icon, Input } from '@/components/ui';
 import { ErrorState, Loading } from '@/components/states';
 import { Screen } from '@/components/screen';
-import { useConversations } from '@/features/queries';
+import { useConversations, useWhatsAppConnection } from '@/features/queries';
+import { useWhatsAppOnboarding } from '@/features/whatsapp-onboarding';
+import { useSession } from '@/features/session';
 import { filterConversations, inboxFilters, type InboxFilter } from '@/features/filters';
 import { useDebounced } from '@/features/use-debounced';
 
@@ -18,6 +20,9 @@ export default function Inbox() {
   const [filter, setFilter] = useState<InboxFilter>('all');
   const [q, setQ] = useState('');
   const search = useDebounced(q, 350);
+  const connection = useWhatsAppConnection();
+  const onboarding = useWhatsAppOnboarding();
+  const canConnect = useSession((s) => s.user?.role === 'admin' && (s.user?.tenantRole === 'tenant_owner' || s.user?.tenantRole === 'tenant_admin'));
 
   const { conversations, isPending, isRefetching, error, refetch } = useConversations({
     search: search.trim() || undefined,
@@ -47,7 +52,16 @@ export default function Inbox() {
           </Pressable>
         ))}
       </View>
-      {isPending ? (
+      {connection.isPending ? (
+        <Loading label="Checking WhatsApp connection…" />
+      ) : connection.data && !connection.data.connected ? (
+        <View style={s.disconnected}>
+          <EmptyState icon="logo-whatsapp" title="WhatsApp not connected" description="Connect WhatsApp to start conversations with your customers." />
+          {canConnect ? <Button title={connection.data.status === 'ACTION_REQUIRED' ? 'Reconnect WhatsApp' : 'Connect WhatsApp'} loading={onboarding.isConnecting} onPress={() => void onboarding.start()} />
+            : <Text style={s.hint}>Ask your shop owner or admin to connect WhatsApp.</Text>}
+          {!!onboarding.error && <Text accessibilityRole="alert" style={s.error}>{onboarding.error}</Text>}
+        </View>
+      ) : isPending ? (
         <Loading label="Loading conversations…" />
       ) : error ? (
         <ErrorState error={error} onRetry={refetch} />
@@ -83,4 +97,7 @@ const s = StyleSheet.create({
   active: { backgroundColor: colors.primary },
   filterText: { fontSize: 11, fontWeight: '800', color: colors.muted },
   activeText: { color: '#fff' },
+  disconnected: { paddingHorizontal: 24, gap: 12 },
+  hint: { color: colors.muted, textAlign: 'center' },
+  error: { color: colors.danger, textAlign: 'center' },
 });

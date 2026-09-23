@@ -23,6 +23,8 @@ export const appConfig = {
     ? DEFAULT_API_BASE_URL
     : trimSlash(configuredApiBaseUrl || DEFAULT_API_BASE_URL),
   apiTimeoutMs: positiveInt(process.env.EXPO_PUBLIC_API_TIMEOUT_MS, 20_000),
+  termsUrl: process.env.EXPO_PUBLIC_TERMS_URL?.trim() || null,
+  privacyUrl: process.env.EXPO_PUBLIC_PRIVACY_URL?.trim() || null,
 } as const;
 
 export const isProductionBuild = appConfig.environment === 'production';

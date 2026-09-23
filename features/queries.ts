@@ -46,6 +46,7 @@ export const queryKeys = {
   tenant: ['tenant'] as const,
   dashboard: ['dashboard'] as const,
   whatsapp: ['whatsapp'] as const,
+  whatsappConnection: ['whatsapp-connection'] as const,
   subscription: ['subscription'] as const,
   conversations: (params?: object) => ['conversations', params ?? {}] as const,
   conversation: (id: string) => ['conversation', id] as const,
@@ -166,6 +167,16 @@ export function useWhatsApp(options: QueryExtras = {}) {
     health: query.data?.health ?? null,
     caps: query.data?.caps ?? null,
   };
+}
+
+export function useWhatsAppConnection(options: QueryExtras = {}) {
+  const enabled = useAuthed();
+  return useQuery({
+    queryKey: queryKeys.whatsappConnection,
+    queryFn: ({ signal }) => watchEntitlement('whatsapp', () => api.whatsapp.status({ signal })),
+    enabled: enabled && options.enabled !== false,
+    staleTime: options.staleTime ?? 15_000,
+  });
 }
 
 /* ------------------------------------------------------------- shop ----- */

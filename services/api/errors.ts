@@ -24,6 +24,7 @@ export class ApiError extends Error {
   readonly code?: string;
   /** Field-level messages from a 422. */
   readonly fields?: Record<string, string>;
+  readonly field?: string;
   readonly retryAfterSeconds?: number;
 
   constructor(init: {
@@ -32,6 +33,7 @@ export class ApiError extends Error {
     message: string;
     code?: string;
     fields?: Record<string, string>;
+    field?: string;
     retryAfterSeconds?: number;
   }) {
     super(init.message);
@@ -40,6 +42,7 @@ export class ApiError extends Error {
     this.status = init.status;
     this.code = init.code;
     this.fields = init.fields;
+    this.field = init.field;
     this.retryAfterSeconds = init.retryAfterSeconds;
   }
 
@@ -88,6 +91,7 @@ export function apiErrorFromResponse(status: number, body: unknown, retryAfterHe
     message: typeof parsed.error === 'string' && parsed.error ? parsed.error : (FALLBACK[kind] ?? FALLBACK.unknown!),
     code: typeof parsed.code === 'string' ? parsed.code : undefined,
     fields: parsed.fields && typeof parsed.fields === 'object' ? parsed.fields : undefined,
+    field: typeof parsed.field === 'string' ? parsed.field : undefined,
     retryAfterSeconds: Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
   });
 }

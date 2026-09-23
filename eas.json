@@ -3,6 +3,6 @@
   "build": {
     "development": { "environment": "development", "developmentClient": true, "distribution": "internal", "env": { "EXPO_PUBLIC_APP_ENV": "development" } },
     "staging": { "environment": "preview", "distribution": "internal", "android": { "buildType": "apk" }, "env": { "EXPO_PUBLIC_APP_ENV": "staging" } },
-    "production": { "environment": "production", "env": { "EXPO_PUBLIC_APP_ENV": "production" } }
+    "production": { "environment": "production", "android": { "buildType": "apk" }, "env": { "EXPO_PUBLIC_APP_ENV": "production" } }
   }
 }
