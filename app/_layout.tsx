@@ -12,6 +12,7 @@ import { canOpenBusiness } from '@/features/account-routing';
 import { bindSessionExpiry, useSession } from '@/features/session';
 import { notificationDestination } from '@/services/notification-routing';
 import { callbackOutcome } from '@/services/whatsapp-onboarding';
+import { AppUpdateGate } from '@/components/app-update-gate';
 import { invalidateForPush, registerCurrentDevice, subscribeToPush, subscribeToTokenChanges } from '@/services/notifications';
 
 SplashScreen.preventAutoHideAsync();
@@ -155,6 +156,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
         <SessionGate />
         <NotificationCoordinator />
+        <AppUpdateGate />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

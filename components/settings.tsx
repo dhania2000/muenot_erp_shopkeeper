@@ -12,6 +12,7 @@ import { isEntitled, useIsTenantAdmin, useSession } from '@/features/session';
 import { businessHoursToApi } from '@/features/mappers';
 import { errorMessage, isApiError } from '@/services/api/errors';
 import type { BusinessHoursDay } from '@/types/domain';
+import { installedVersionCode, installedVersionName, useAppUpdate } from '@/features/app-update';
 
 /* --------------------------------------------------------- settings ---- */
 
@@ -45,6 +46,7 @@ export function Settings() {
       'Account',
       [
         ['/more/settings/account', 'Account', 'person-circle-outline'],
+        ['/more/settings/about', 'About & Updates', 'information-circle-outline'],
         ['/more/settings/help', 'Help & Support', 'help-circle-outline'],
         ['/more/settings/legal/privacy', 'Privacy', 'shield-checkmark-outline'],
         ['/more/settings/legal/terms', 'Terms', 'document-text-outline'],
@@ -95,6 +97,28 @@ export function Settings() {
       </View>
     </Screen>
   );
+}
+
+export function AboutAndUpdates() {
+  const { check, isChecking, hasChecked, release, policy, error, install, phase } = useAppUpdate();
+  return <Screen>
+    <Header title="About & Updates" />
+    <View style={s.section}>
+      <Card style={{ gap: 10 }}>
+        <Text style={s.name}>Muenot Shopkeeper</Text>
+        <Text style={s.muted}>Current version: {installedVersionName}</Text>
+        <Text style={s.muted}>Version code: {Number.isFinite(installedVersionCode) ? installedVersionCode : 'Unknown'}</Text>
+      </Card>
+      <Button title="Check for Updates" loading={isChecking} onPress={() => void check(true)} />
+      {release && policy !== 'none' && <Card style={{ gap: 10 }}>
+        <Text style={s.name}>{policy === 'mandatory' ? 'Update Required' : 'Update Available'} · {release.latestVersion}</Text>
+        {release.releaseNotes.map((note, index) => <Text key={index} style={s.muted}>• {note}</Text>)}
+        <Button title={phase === 'idle' ? 'Update Now' : 'Preparing update…'} loading={phase !== 'idle'} onPress={() => void install()} />
+      </Card>}
+      {hasChecked && policy === 'none' && !error && <Text style={s.muted}>You have the latest available version.</Text>}
+      {!!error && <Text accessibilityRole="alert" style={{ color: colors.danger }}>{error}</Text>}
+    </View>
+  </Screen>;
 }
 
 /* ----------------------------------------------------- shop profile ---- */

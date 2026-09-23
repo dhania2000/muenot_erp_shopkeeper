@@ -168,3 +168,11 @@ the APK, not secrets. The in-app registration form does not invent legal URLs.
 Complete production ERP deployment, migrations, Meta configuration and real
 Android device testing of registration, approval, browser return and FCM.
 The EAS `production` Android profile builds an APK for direct distribution.
+
+### Self-hosted APK updates
+
+The app checks the public ERP `/app-version` endpoint on startup and compares
+the installed Android `versionCode`. A verified APK is handed to the normal
+Android installer; there is no Play Store or EAS Update dependency. See
+[the Shopkeeper release guide](docs/android-apk-releases.md) for signing,
+local Windows builds, publishing handoff, and device upgrade checks.

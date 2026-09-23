@@ -25,6 +25,8 @@ export const appConfig = {
   apiTimeoutMs: positiveInt(process.env.EXPO_PUBLIC_API_TIMEOUT_MS, 20_000),
   termsUrl: process.env.EXPO_PUBLIC_TERMS_URL?.trim() || null,
   privacyUrl: process.env.EXPO_PUBLIC_PRIVACY_URL?.trim() || null,
+  apkAllowedHosts: (process.env.EXPO_PUBLIC_APK_ALLOWED_HOSTS || 'downloads.muenot.co.in,erp.muenot.co.in')
+    .split(',').map((host: string) => host.trim().toLowerCase()).filter(Boolean),
 } as const;
 
 export const isProductionBuild = appConfig.environment === 'production';

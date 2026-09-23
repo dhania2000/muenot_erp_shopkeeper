@@ -1,4 +1,5 @@
 import { request } from './client';
+import type { AppRelease } from '@/features/update-policy';
 import type {
   AutomationsResponse,
   CampaignsResponse,
@@ -235,6 +236,11 @@ export const notifications = {
     request<{ ok: true }>('/notifications', { method: 'PATCH', body: id ? { id } : {}, ...opts }),
 };
 
+/** Public ERP release metadata; no session is needed at startup. */
+export const appVersion = {
+  get: () => request<AppRelease>('/app-version', { auth: false, retries: 0, timeoutMs: 8_000 }),
+};
+
 export const api = {
   auth,
   tenant,
@@ -252,4 +258,5 @@ export const api = {
   subscription,
   devices,
   notifications,
+  appVersion,
 };
